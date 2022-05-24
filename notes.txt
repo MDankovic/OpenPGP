@@ -1,0 +1,21 @@
+PGPSecretKeyRing
+PGPPublicKeyRing
+
+PGPSignatureGenerator
+
+symmetricKeyAlgorithmTags:
+= 	CAST5
+= TRIPLE_DES
+
+ PGPDataDecryptor dekripcija
+ 
+ public interface PGPDataEncryptorBuilder
+A builder for PGPDataEncryptor instances, which can be used to encrypt data objects.
+
+A PGPCompressedDataGenerator is usually used to wrap the OutputStream obtained from a PGPEncryptedDataGenerator (i.e. to compress data prior to encrypting it).
+
+PGPEncryptedDataGenerator(PGPDataEncryptorBuilder encryptorBuilder)
+Base constructor.
+
+ElGamalPublicBCPGKey
+ElGamalSecretBCPGKey
