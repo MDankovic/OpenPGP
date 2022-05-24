@@ -2,6 +2,7 @@ package etf.openpgp.dm180096ddj180159d;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -9,9 +10,11 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -20,6 +23,7 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 
 @SuppressWarnings("serial")
@@ -82,6 +86,8 @@ public class MainFrame extends JFrame {
 	
 	private JTable tablePublicKeys;
 	private JTable tableSecretKeys;
+	
+	private File file = null;
 
 	public MainFrame() {
 		super("OpenPGP");
@@ -107,6 +113,9 @@ public class MainFrame extends JFrame {
 		tablePublicKeys.setRowHeight(25);	
 		tablePublicKeys.setShowHorizontalLines(false);
 		tablePublicKeys.setShowVerticalLines(false);
+		tablePublicKeys.getTableHeader().setOpaque(false);
+		tablePublicKeys.getTableHeader().setBackground(Color.LIGHT_GRAY);
+		tablePublicKeys.getTableHeader().setFont(new Font("Tahoma", Font.BOLD, 14));
 		
 		DefaultTableModel publicTableModel = new KeyRingTableModel();
 		for(Object[] row : data2) {
@@ -120,12 +129,33 @@ public class MainFrame extends JFrame {
 		tableSecretKeys.setRowHeight(25);	
 		tableSecretKeys.setShowHorizontalLines(false);	
 		tableSecretKeys.setShowVerticalLines(false);
+		tableSecretKeys.getTableHeader().setOpaque(false);
+		tableSecretKeys.getTableHeader().setBackground(Color.LIGHT_GRAY);
+		tableSecretKeys.getTableHeader().setFont(new Font("Tahoma", Font.BOLD, 14));
 
 		JPanel panelButtons = new JPanel();
 		contentPane.add(panelButtons, BorderLayout.NORTH);
 		panelButtons.setLayout(new GridLayout(1, 6, 30, 0));
 
 		JButton btnSignEncrypt = new JButton("Sign/Encrypt");
+		btnSignEncrypt.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+			    JFileChooser chooser = new JFileChooser();
+			    FileNameExtensionFilter filter = new FileNameExtensionFilter("OpenPGP encrypted files", "gpg");
+			    chooser.setFileFilter(filter);
+
+			    int returnVal = chooser.showOpenDialog(SwingUtilities.getWindowAncestor((Component) e.getSource()));
+			    if(returnVal == JFileChooser.APPROVE_OPTION) {
+			    	SignEncryptDialog signEncryptDialog = new SignEncryptDialog();
+				    signEncryptDialog.setFile(chooser.getSelectedFile());
+					signEncryptDialog.setLocationRelativeTo(SwingUtilities.getWindowAncestor((Component) e.getSource()));
+					signEncryptDialog.setVisible(true);
+			    }
+				
+			    
+			}
+		});
 		btnSignEncrypt.setFont(new Font("Tahoma", Font.PLAIN, 16));
 		btnSignEncrypt.setPreferredSize(new Dimension(40, 40));
 		panelButtons.add(btnSignEncrypt);
@@ -196,6 +226,15 @@ public class MainFrame extends JFrame {
 		tabbedPane.addTab("Public Keys", null, sPanePublicKeys, null);
 	}
 	
+	
+	public File getFile() {
+		return file;
+	}
+
+	public void setFile(File file) {
+		this.file = file;
+	}
+
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
