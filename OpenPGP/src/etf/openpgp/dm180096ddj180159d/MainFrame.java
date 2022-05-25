@@ -23,12 +23,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.plaf.nimbus.NimbusLookAndFeel;
-import javax.swing.table.DefaultTableModel;
 
 @SuppressWarnings("serial")
 public class MainFrame extends JFrame {
@@ -117,7 +113,7 @@ public class MainFrame extends JFrame {
 	
 	private void createKeyRingTables() {
 		// DUMMY VALUES
-		DefaultTableModel secretTableModel = new KeyRingTableModel();
+		KeyRingTableModel secretTableModel = new KeyRingTableModel();
 		for (Object[] row : data1) {
 			secretTableModel.addRow(row);
 		}
@@ -133,7 +129,7 @@ public class MainFrame extends JFrame {
 		tablePublicKeys.getTableHeader().setBackground(Color.LIGHT_GRAY);
 		tablePublicKeys.getTableHeader().setFont(new Font("Tahoma", Font.BOLD, 14));
 
-		DefaultTableModel publicTableModel = new KeyRingTableModel();
+		KeyRingTableModel publicTableModel = new KeyRingTableModel();
 		for (Object[] row : data2) {
 			publicTableModel.addRow(row);
 		}
@@ -204,7 +200,7 @@ public class MainFrame extends JFrame {
 				JDialog newKeyPairDialog = new NewKeyPairDialog();
 				newKeyPairDialog.setLocationRelativeTo(SwingUtilities.getWindowAncestor((Component) e.getSource()));
 				newKeyPairDialog.setVisible(true);
-				DefaultTableModel model = (DefaultTableModel) tableSecretKeys.getModel();
+				KeyRingTableModel model = (KeyRingTableModel) tableSecretKeys.getModel();
 				model.addRow(new Object[] { "Petar", "IMG", "Zikica123", "Mare", "Jovic" });
 			}
 		});
@@ -221,7 +217,7 @@ public class MainFrame extends JFrame {
 					JDialog deleteKeyDialog = new DeleteKeyDialog();
 					deleteKeyDialog.setLocationRelativeTo(SwingUtilities.getWindowAncestor((Component) e.getSource()));
 					deleteKeyDialog.setVisible(true);
-					DefaultTableModel model = (DefaultTableModel) tableSecretKeys.getModel();
+					KeyRingTableModel model = (KeyRingTableModel) tableSecretKeys.getModel();
 					model.removeRow(selectedRow);
 				} else {
 					JOptionPane.showMessageDialog(me, "Please select the key that you want to delete.", "No Key Selected",
