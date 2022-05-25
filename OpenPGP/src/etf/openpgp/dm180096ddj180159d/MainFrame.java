@@ -167,7 +167,7 @@ public class MainFrame extends JFrame {
 							.setLocationRelativeTo(SwingUtilities.getWindowAncestor((Component) e.getSource()));
 					signEncryptDialog.setVisible(true);
 				} else {
-					JOptionPane.showMessageDialog(me, "No file has been selected", "File Error",
+					JOptionPane.showMessageDialog(me, "No file has been selected.", "File Error",
 							JOptionPane.WARNING_MESSAGE);
 				}
 			}
@@ -188,7 +188,7 @@ public class MainFrame extends JFrame {
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 					System.out.println("FILE processed");
 				} else {
-					JOptionPane.showMessageDialog(me, "No file has been selected", "File Error",
+					JOptionPane.showMessageDialog(me, "No file has been selected.", "File Error",
 							JOptionPane.WARNING_MESSAGE);
 				}
 			}
@@ -224,7 +224,7 @@ public class MainFrame extends JFrame {
 					DefaultTableModel model = (DefaultTableModel) tableSecretKeys.getModel();
 					model.removeRow(selectedRow);
 				} else {
-					JOptionPane.showMessageDialog(me, "Please select the key you want to delete", "No Key Selected",
+					JOptionPane.showMessageDialog(me, "Please select the key that you want to delete.", "No Key Selected",
 							JOptionPane.WARNING_MESSAGE);
 				}
 			}
@@ -239,14 +239,14 @@ public class MainFrame extends JFrame {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				JFileChooser chooser = new JFileChooser();
-				FileNameExtensionFilter filter = new FileNameExtensionFilter("OpenPGP exported kry", "asc");
+				FileNameExtensionFilter filter = new FileNameExtensionFilter("OpenPGP exported key", "asc");
 				chooser.setFileFilter(filter);
 
 				int returnVal = chooser.showOpenDialog(SwingUtilities.getWindowAncestor((Component) e.getSource()));
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 					System.out.println("KEY IMPORTED");
 				} else {
-					JOptionPane.showMessageDialog(me, "No file has been selected", "File Error",
+					JOptionPane.showMessageDialog(me, "No file has been selected.", "File Error",
 							JOptionPane.WARNING_MESSAGE);
 				}
 			}
@@ -263,7 +263,7 @@ public class MainFrame extends JFrame {
 				if (selectedRow != -1) {
 					System.out.println("KEY EXPORTED");
 				} else {
-					JOptionPane.showMessageDialog(me, "Please select the key you want to export", "No Key Selected",
+					JOptionPane.showMessageDialog(me, "Please select the key that you want to export.", "No Key Selected",
 							JOptionPane.WARNING_MESSAGE);
 				}
 			}
