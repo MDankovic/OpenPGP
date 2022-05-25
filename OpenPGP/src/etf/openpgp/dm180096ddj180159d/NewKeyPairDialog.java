@@ -6,7 +6,11 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.util.Enumeration;
 
+import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -14,10 +18,12 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JRadioButton;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
-import javax.swing.JSeparator;
+
+import org.bouncycastle.openpgp.PGPException;
 
 @SuppressWarnings("serial")
 public class NewKeyPairDialog extends JDialog {
@@ -26,6 +32,7 @@ public class NewKeyPairDialog extends JDialog {
 	private JPasswordField pfPassword;
 	private JTextField tfEmail;
 	private JTextField tfName;
+	private JTable tableSecretKeys;
 
 	public NewKeyPairDialog() {
 		this.setTitle("Generate Key-Pair");
@@ -99,6 +106,7 @@ public class NewKeyPairDialog extends JDialog {
 		contentPanel.add(rdbtn2048DSA);
 
 		JRadioButton rdbtn1024ElGamal = new JRadioButton("1024b");
+		rdbtn1024ElGamal.setSelected(true);
 		rdbtn1024ElGamal.setFont(new Font("Tahoma", Font.PLAIN, 16));
 		rdbtn1024ElGamal.setBounds(120, 250, 100, 30);
 		contentPanel.add(rdbtn1024ElGamal);
@@ -113,12 +121,14 @@ public class NewKeyPairDialog extends JDialog {
 		rdbtn4096ElGamal.setBounds(120, 330, 100, 30);
 		contentPanel.add(rdbtn4096ElGamal);
 
-		ButtonGroup radioGroup = new ButtonGroup();
-		radioGroup.add(rdbtn1024DSA);
-		radioGroup.add(rdbtn2048DSA);
-		radioGroup.add(rdbtn1024ElGamal);
-		radioGroup.add(rdbtn2048ElGamal);
-		radioGroup.add(rdbtn4096ElGamal);
+		ButtonGroup radioGroupDSA = new ButtonGroup();
+		radioGroupDSA.add(rdbtn1024DSA);
+		radioGroupDSA.add(rdbtn2048DSA);
+		
+		ButtonGroup radioGroupElGamal = new ButtonGroup();
+		radioGroupElGamal.add(rdbtn1024ElGamal);
+		radioGroupElGamal.add(rdbtn2048ElGamal);
+		radioGroupElGamal.add(rdbtn4096ElGamal);
 
 		JPanel buttonPane = new JPanel();
 		getContentPane().add(buttonPane, BorderLayout.SOUTH);
@@ -128,7 +138,32 @@ public class NewKeyPairDialog extends JDialog {
 		btnOk.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-
+				KeyRingTableModel model = (KeyRingTableModel) tableSecretKeys.getModel();
+				
+				int dsaKeySize = 1024;
+				int egKeySize = 1024;
+				
+				if(rdbtn2048DSA.isSelected())
+					dsaKeySize = 2048;
+				
+				if(rdbtn2048ElGamal.isSelected())
+					egKeySize = 2048;
+				else if(rdbtn4096ElGamal.isSelected())
+					egKeySize = 4096;
+				
+				String user = tfName.getText();
+				String email = tfEmail.getText();
+				String userId = user + " <" + email +">";
+				
+				char[] passPhrase = pfPassword.getPassword();
+				
+				try {
+					model.addKeyRing(DsaEgGenerator.generateKeyRing(userId, passPhrase, false, dsaKeySize, egKeySize));
+				} catch (NoSuchAlgorithmException | NoSuchProviderException | PGPException e1) {
+					e1.printStackTrace();
+				}
+				
+				dispose();
 			}
 		});
 		btnOk.setFont(new Font("Tahoma", Font.PLAIN, 16));
@@ -148,6 +183,14 @@ public class NewKeyPairDialog extends JDialog {
 		btnCancel.setActionCommand("Cancel");
 		btnCancel.setPreferredSize(new Dimension(40, 40));
 		buttonPane.add(btnCancel);
+	}
+
+	public JTable getTableSecretKeys() {
+		return tableSecretKeys;
+	}
+
+	public void setTableSecretKeys(JTable tableSecretKeys) {
+		this.tableSecretKeys = tableSecretKeys;
 	}
 
 	public static void main(String[] args) {

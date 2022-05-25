@@ -23,11 +23,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 import javax.swing.table.DefaultTableModel;
 
 @SuppressWarnings("serial")
@@ -53,30 +50,8 @@ public class MainFrame extends JFrame {
 			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" },
 			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" },
 			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" },
-			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" },
-			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" },
-			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" },
-			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" },
-			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" },
-			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" },
-			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" },
-			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" },
-			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" },
-			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" },
-			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" },
-			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" },
-			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" },
-			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" },
-			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" },
-			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" },
-			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" },
-			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" },
-			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" },
-			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" },
-			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" },
-			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" },
-			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" },
-			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" } };
+			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" }
+			};
 
 	public MainFrame() {
 		super("OpenPGP");
@@ -201,11 +176,10 @@ public class MainFrame extends JFrame {
 		btnKeyPair.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				JDialog newKeyPairDialog = new NewKeyPairDialog();
+				NewKeyPairDialog newKeyPairDialog = new NewKeyPairDialog();
+				newKeyPairDialog.setTableSecretKeys(tableSecretKeys);
 				newKeyPairDialog.setLocationRelativeTo(SwingUtilities.getWindowAncestor((Component) e.getSource()));
 				newKeyPairDialog.setVisible(true);
-				DefaultTableModel model = (DefaultTableModel) tableSecretKeys.getModel();
-				model.addRow(new Object[] { "Petar", "IMG", "Zikica123", "Mare", "Jovic" });
 			}
 		});
 		btnKeyPair.setFont(new Font("Tahoma", Font.PLAIN, 16));
@@ -261,7 +235,8 @@ public class MainFrame extends JFrame {
 			public void mouseClicked(MouseEvent e) {
 				int selectedRow = tableSecretKeys.getSelectedRow();
 				if (selectedRow != -1) {
-					System.out.println("KEY EXPORTED");
+					KeyRingTableModel model = (KeyRingTableModel) tableSecretKeys.getModel();
+					model.exportKeyRing(selectedRow);
 				} else {
 					JOptionPane.showMessageDialog(me, "Please select the key that you want to export.", "No Key Selected",
 							JOptionPane.WARNING_MESSAGE);
@@ -279,6 +254,22 @@ public class MainFrame extends JFrame {
 
 	public void setFile(File file) {
 		this.file = file;
+	}
+	
+	public JTable getTablePublicKeys() {
+		return tablePublicKeys;
+	}
+
+	public void setTablePublicKeys(JTable tablePublicKeys) {
+		this.tablePublicKeys = tablePublicKeys;
+	}
+
+	public JTable getTableSecretKeys() {
+		return tableSecretKeys;
+	}
+
+	public void setTableSecretKeys(JTable tableSecretKeys) {
+		this.tableSecretKeys = tableSecretKeys;
 	}
 
 	public static void main(String[] args) {
