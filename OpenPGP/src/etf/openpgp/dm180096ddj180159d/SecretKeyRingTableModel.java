@@ -104,14 +104,17 @@ public class SecretKeyRingTableModel extends DefaultTableModel {
 	}
 
 	public void setKeyRingList(PGPSecretKeyRingCollection keyRingCollection) {
+		setRowCount(0);
+		this.addKeyRingList(keyRingCollection);
+	}
 
+	public void addKeyRingList(PGPSecretKeyRingCollection keyRingCollection) {
 		List<PGPSecretKeyRing> keyRingList = new ArrayList<>();
 		Iterator<PGPSecretKeyRing> it = keyRingCollection.getKeyRings();
 		while (it.hasNext()) {
 			keyRingList.add(it.next());
 		}
 
-		setRowCount(0);
 		for (PGPSecretKeyRing skr : keyRingList) {
 			addKeyRing(skr);
 		}
