@@ -10,7 +10,15 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -27,6 +35,13 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 
+import org.bouncycastle.bcpg.ArmoredInputStream;
+import org.bouncycastle.bcpg.ArmoredOutputStream;
+import org.bouncycastle.openpgp.PGPException;
+import org.bouncycastle.openpgp.PGPSecretKeyRing;
+import org.bouncycastle.openpgp.PGPSecretKeyRingCollection;
+import org.bouncycastle.openpgp.operator.bc.BcKeyFingerprintCalculator;
+
 @SuppressWarnings("serial")
 public class MainFrame extends JFrame {
 	private MainFrame me;
@@ -35,30 +50,27 @@ public class MainFrame extends JFrame {
 	private JTable tableSecretKeys;
 	private File file;
 
-	private String data1[][] = { { "PeraP", "Vinod", "MCA", "Computer", "Test" },
-			{ "PeraP", "Vinod", "MCA", "Computer", "Test" }, { "PeraP", "Vinod", "MCA", "Computer", "Test" },
-			{ "PeraP", "Vinod", "MCA", "Computer", "Test" }, { "PeraP", "Vinod", "MCA", "Computer", "Test" },
-			{ "PeraP", "Vinod", "MCA", "Computer", "Test" }, { "PeraP", "Vinod", "MCA", "Computer", "Test" },
-			{ "PeraP", "Vinod", "MCA", "Computer", "Test" }, { "PeraP", "Vinod", "MCA", "Computer", "Test" },
-			{ "PeraP", "Vinod", "MCA", "Computer", "Test" }, { "PeraP", "Vinod", "MCA", "Computer", "Test" },
-			{ "PeraP", "Vinod", "MCA", "Computer", "Test" }, { "PeraP", "Vinod", "MCA", "Computer", "Test" },
-			{ "PeraP", "Vinod", "MCA", "Computer", "Test" }, { "PeraP", "Vinod", "MCA", "Computer", "Test" },
-			{ "PeraP", "Vinod", "MCA", "Computer", "Test" }, { "PeraP", "Vinod", "MCA", "Computer", "Test" } };
-
-	private String data2[][] = { { "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" },
-			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" },
-			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" },
-			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" },
-			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" },
-			{ "ZivojinZ", "Aleksa", "WTP", "Television", "Zika" }
-			};
-
 	public MainFrame() {
 		super("OpenPGP");
+
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				KeyRingTableModel model = (KeyRingTableModel) tableSecretKeys.getModel();
+				try (ArmoredOutputStream outPrivate = new ArmoredOutputStream(new FileOutputStream("keys-secret.asc"));
+						ArmoredOutputStream outPublic = new ArmoredOutputStream(new FileOutputStream("keys-public.asc"));) {
+					model.getSecretRingCollection().encode(outPrivate);
+					model.getPublicKeyRingCollection().encode(outPublic);
+				} catch (IOException | PGPException e1) {
+					e1.printStackTrace();
+				}
+			}
+		});
 
 		this.me = this;
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
 		setBounds(100, 100, 1000, 600);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -68,7 +80,7 @@ public class MainFrame extends JFrame {
 		JPanel panelButtons = new JPanel();
 		contentPane.add(panelButtons, BorderLayout.NORTH);
 		panelButtons.setLayout(new GridLayout(1, 6, 30, 0));
-		
+
 		createButtons(panelButtons);
 
 		JPanel panelMain = new JPanel();
@@ -78,8 +90,24 @@ public class MainFrame extends JFrame {
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		tabbedPane.setFont(new Font("Tahoma", Font.PLAIN, 16));
 		panelMain.add(tabbedPane, "tPaneKeyRings");
-		
+
 		createKeyRingTables();
+		
+		try (ArmoredInputStream inPrivate = new ArmoredInputStream(new FileInputStream("keys-secret.asc"));
+				ArmoredInputStream inPublic = new ArmoredInputStream(new FileInputStream("keys-public.asc"));) {
+			PGPSecretKeyRingCollection sRingCollection = new PGPSecretKeyRingCollection(inPrivate, new BcKeyFingerprintCalculator());
+			
+			List<PGPSecretKeyRing> secretKeyRingCollection = new ArrayList<>();
+			Iterator<PGPSecretKeyRing> it = sRingCollection.getKeyRings();
+			while(it.hasNext()) {
+				secretKeyRingCollection.add(it.next());
+			}
+
+			KeyRingTableModel model = (KeyRingTableModel) tableSecretKeys.getModel();
+			model.setKeyRingCollection(secretKeyRingCollection);
+		} catch (IOException | PGPException e1) {
+			e1.printStackTrace();
+		}
 
 		JScrollPane sPaneSecretKeys = new JScrollPane();
 		sPaneSecretKeys.setViewportView(tableSecretKeys);
@@ -89,13 +117,10 @@ public class MainFrame extends JFrame {
 		sPanePublicKeys.setViewportView(tablePublicKeys);
 		tabbedPane.addTab("Public Keys", null, sPanePublicKeys, null);
 	}
-	
+
 	private void createKeyRingTables() {
 		// DUMMY VALUES
-		DefaultTableModel secretTableModel = new KeyRingTableModel();
-		for (Object[] row : data1) {
-			secretTableModel.addRow(row);
-		}
+		KeyRingTableModel secretTableModel = new KeyRingTableModel();
 
 		tablePublicKeys = new JTable(secretTableModel);
 		tablePublicKeys.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -108,10 +133,7 @@ public class MainFrame extends JFrame {
 		tablePublicKeys.getTableHeader().setBackground(Color.LIGHT_GRAY);
 		tablePublicKeys.getTableHeader().setFont(new Font("Tahoma", Font.BOLD, 14));
 
-		DefaultTableModel publicTableModel = new KeyRingTableModel();
-		for (Object[] row : data2) {
-			publicTableModel.addRow(row);
-		}
+		KeyRingTableModel publicTableModel = new KeyRingTableModel();
 
 		tableSecretKeys = new JTable(publicTableModel);
 		tableSecretKeys.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -198,8 +220,8 @@ public class MainFrame extends JFrame {
 					DefaultTableModel model = (DefaultTableModel) tableSecretKeys.getModel();
 					model.removeRow(selectedRow);
 				} else {
-					JOptionPane.showMessageDialog(me, "Please select the key that you want to delete.", "No Key Selected",
-							JOptionPane.WARNING_MESSAGE);
+					JOptionPane.showMessageDialog(me, "Please select the key that you want to delete.",
+							"No Key Selected", JOptionPane.WARNING_MESSAGE);
 				}
 			}
 		});
@@ -218,7 +240,21 @@ public class MainFrame extends JFrame {
 
 				int returnVal = chooser.showOpenDialog(SwingUtilities.getWindowAncestor((Component) e.getSource()));
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
-					System.out.println("KEY IMPORTED");
+					try (ArmoredInputStream inPrivate = new ArmoredInputStream(new FileInputStream("keys-secret.asc"));
+							ArmoredInputStream inPublic = new ArmoredInputStream(new FileInputStream("keys-public.asc"));) {
+						PGPSecretKeyRingCollection sRingCollection = new PGPSecretKeyRingCollection(inPrivate, new BcKeyFingerprintCalculator());
+						
+						List<PGPSecretKeyRing> secretKeyRingCollection = new ArrayList<>();
+						Iterator<PGPSecretKeyRing> it = sRingCollection.getKeyRings();
+						while(it.hasNext()) {
+							secretKeyRingCollection.add(it.next());
+						}
+
+						KeyRingTableModel model = (KeyRingTableModel) tableSecretKeys.getModel();
+						model.setKeyRingCollection(secretKeyRingCollection);
+					} catch (IOException | PGPException e1) {
+						e1.printStackTrace();
+					}
 				} else {
 					JOptionPane.showMessageDialog(me, "No file has been selected.", "File Error",
 							JOptionPane.WARNING_MESSAGE);
@@ -238,8 +274,8 @@ public class MainFrame extends JFrame {
 					KeyRingTableModel model = (KeyRingTableModel) tableSecretKeys.getModel();
 					model.exportKeyRing(selectedRow);
 				} else {
-					JOptionPane.showMessageDialog(me, "Please select the key that you want to export.", "No Key Selected",
-							JOptionPane.WARNING_MESSAGE);
+					JOptionPane.showMessageDialog(me, "Please select the key that you want to export.",
+							"No Key Selected", JOptionPane.WARNING_MESSAGE);
 				}
 			}
 		});
@@ -255,7 +291,7 @@ public class MainFrame extends JFrame {
 	public void setFile(File file) {
 		this.file = file;
 	}
-	
+
 	public JTable getTablePublicKeys() {
 		return tablePublicKeys;
 	}

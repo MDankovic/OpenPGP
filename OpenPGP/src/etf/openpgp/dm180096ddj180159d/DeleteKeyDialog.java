@@ -50,6 +50,12 @@ public class DeleteKeyDialog extends JDialog {
 		buttonPane.setLayout(new GridLayout(0, 2, 0, 0));
 
 		JButton btnOk = new JButton("OK");
+		btnOk.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				// TODO
+			}
+		});
 		btnOk.setFont(new Font("Tahoma", Font.PLAIN, 16));
 		btnOk.setActionCommand("OK");
 		btnOk.setPreferredSize(new Dimension(40, 40));

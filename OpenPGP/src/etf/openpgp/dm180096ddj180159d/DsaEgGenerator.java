@@ -36,8 +36,7 @@ public class DsaEgGenerator {
 		PGPKeyPair dsaKeyPair = new JcaPGPKeyPair(PGPPublicKey.DSA, dsaGen.generateKeyPair(), new Date());
 		PGPKeyPair egKeyPair = new JcaPGPKeyPair(PGPPublicKey.ELGAMAL_ENCRYPT, egGen.generateKeyPair(), new Date());
 
-		PGPDigestCalculator sha1Calculator = new JcaPGPDigestCalculatorProviderBuilder().build()
-				.get(HashAlgorithmTags.SHA1);
+		PGPDigestCalculator sha1Calculator = getShaCalculator();
 		PGPContentSignerBuilder csBuilder = new JcaPGPContentSignerBuilder(dsaKeyPair.getPublicKey().getAlgorithm(),
 				HashAlgorithmTags.SHA256);
 		PBESecretKeyEncryptor skEncryptor = new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.CAST5, sha1Calculator)
@@ -56,5 +55,12 @@ public class DsaEgGenerator {
 		PGPKeyRingGenerator keyRingGen = generateKeyRingGenerator(identity, passPhrase, armor, dsaKeySize, elGamalKeySize);
 		return keyRingGen.generateSecretKeyRing();
 	}
-
+	
+	public static PGPDigestCalculator getShaCalculator() throws PGPException {
+		PGPDigestCalculator sha1Calculator = new JcaPGPDigestCalculatorProviderBuilder().build()
+				.get(HashAlgorithmTags.SHA1);
+		
+		return sha1Calculator;
+	}
+	
 }
