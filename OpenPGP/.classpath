@@ -6,7 +6,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="D:/Milan/13. Fakultet/IV godina/II semestar/ZP/OpenPGP/bcpg-jdk18on-171.jar"/>
-	<classpathentry kind="lib" path="D:/Milan/13. Fakultet/IV godina/II semestar/ZP/OpenPGP/bcprov-ext-jdk18on-171.jar"/>
+	<classpathentry kind="lib" path="F:/OneDrive - student.etf.bg.ac.rs/Semestar VIII/[ZP]  Zaštita podataka/Projekat/OpenPGP/bcpg-jdk18on-171.jar"/>
+	<classpathentry kind="lib" path="F:/OneDrive - student.etf.bg.ac.rs/Semestar VIII/[ZP]  Zaštita podataka/Projekat/OpenPGP/bcprov-jdk18on-171.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

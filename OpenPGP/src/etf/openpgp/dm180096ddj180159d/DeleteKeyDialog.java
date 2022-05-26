@@ -4,25 +4,32 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+
+import org.bouncycastle.openpgp.PGPException;
 
 @SuppressWarnings("serial")
 public class DeleteKeyDialog extends JDialog {
-
+	private DeleteKeyDialog me;
 	private final JPanel contentPanel = new JPanel();
 	private JPasswordField passwordField;
+	private JTable tableSecretKeys;
+	private int selectedRow;
 
 	public DeleteKeyDialog() {
 		this.setTitle("Delete Key");
+		this.me = this;
 		this.setResizable(false);
 		this.setModalityType(JDialog.DEFAULT_MODALITY_TYPE);
 
@@ -53,7 +60,17 @@ public class DeleteKeyDialog extends JDialog {
 		btnOk.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				// TODO
+				SecretKeyRingTableModel model = (SecretKeyRingTableModel) tableSecretKeys.getModel();
+				try {
+					model.removeKeyRing(selectedRow, passwordField.getPassword());
+					JOptionPane.showMessageDialog(me, "Key successfully deleted.",
+							"Delete Key", JOptionPane.INFORMATION_MESSAGE);
+
+					dispose();
+				} catch (PGPException e1) {
+					JOptionPane.showMessageDialog(me, "Incorrect password.",
+							"Delete Key", JOptionPane.ERROR_MESSAGE);
+				}
 			}
 		});
 		btnOk.setFont(new Font("Tahoma", Font.PLAIN, 16));
@@ -74,6 +91,22 @@ public class DeleteKeyDialog extends JDialog {
 		btnCancel.setPreferredSize(new Dimension(40, 40));
 		buttonPane.add(btnCancel);
 
+	}
+
+	public int getSelectedRow() {
+		return selectedRow;
+	}
+
+	public void setSelectedRow(int selectedRow) {
+		this.selectedRow = selectedRow;
+	}
+
+	public JTable getTableSecretKeys() {
+		return tableSecretKeys;
+	}
+
+	public void setTableSecretKeys(JTable tableSecretKeys) {
+		this.tableSecretKeys = tableSecretKeys;
 	}
 
 	public static void main(String[] args) {

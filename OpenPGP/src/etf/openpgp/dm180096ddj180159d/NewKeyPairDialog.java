@@ -8,9 +8,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.util.Enumeration;
 
-import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -138,7 +136,7 @@ public class NewKeyPairDialog extends JDialog {
 		btnOk.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				KeyRingTableModel model = (KeyRingTableModel) tableSecretKeys.getModel();
+				SecretKeyRingTableModel model = (SecretKeyRingTableModel) tableSecretKeys.getModel();
 				
 				int dsaKeySize = 1024;
 				int egKeySize = 1024;
