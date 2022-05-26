@@ -231,6 +231,8 @@ public class MainFrame extends JFrame {
 					if (selectedRow != -1) {
 						PublicKeyRingTableModel model = (PublicKeyRingTableModel) tablePublicKeys.getModel();
 						model.removeKeyRing(selectedRow);
+						JOptionPane.showMessageDialog(me, "Key successfully deleted.", "Delete Key",
+								JOptionPane.INFORMATION_MESSAGE);
 					} else {
 						JOptionPane.showMessageDialog(me, "Please select the key you want to delete.", "Delete Key",
 								JOptionPane.WARNING_MESSAGE);
