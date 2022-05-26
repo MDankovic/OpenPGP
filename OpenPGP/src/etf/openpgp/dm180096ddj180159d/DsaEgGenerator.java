@@ -6,6 +6,7 @@ import java.security.NoSuchProviderException;
 import java.util.Date;
 
 import org.bouncycastle.bcpg.HashAlgorithmTags;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openpgp.PGPEncryptedData;
 import org.bouncycastle.openpgp.PGPException;
 import org.bouncycastle.openpgp.PGPKeyPair;
@@ -23,37 +24,36 @@ import org.bouncycastle.openpgp.operator.jcajce.JcePBESecretKeyEncryptorBuilder;
 
 public class DsaEgGenerator {
 
-	private static PGPKeyRingGenerator generateKeyRingGenerator(String identity, String passPhrase, boolean armor,
+	private static PGPKeyRingGenerator generateKeyRingGenerator(String identity, char[] passPhrase, boolean armor,
 			int dsaKeySize, int elGamalKeySize) throws NoSuchAlgorithmException, NoSuchProviderException, PGPException {
 
-		KeyPairGenerator egGen = KeyPairGenerator.getInstance("ELGAMAL", "BC");
-		KeyPairGenerator dsaGen = KeyPairGenerator.getInstance("DSA", "BC");
+		KeyPairGenerator egGen = KeyPairGenerator.getInstance("ELGAMAL", new BouncyCastleProvider());
+		KeyPairGenerator dsaGen = KeyPairGenerator.getInstance("DSA", new BouncyCastleProvider());
 
 		dsaGen.initialize(dsaKeySize);
 		egGen.initialize(elGamalKeySize);
 
-		PGPKeyPair dsaKeyPair = new JcaPGPKeyPair(PGPPublicKey.ELGAMAL_ENCRYPT, dsaGen.generateKeyPair(), new Date());
+		PGPKeyPair dsaKeyPair = new JcaPGPKeyPair(PGPPublicKey.DSA, dsaGen.generateKeyPair(), new Date());
 		PGPKeyPair egKeyPair = new JcaPGPKeyPair(PGPPublicKey.ELGAMAL_ENCRYPT, egGen.generateKeyPair(), new Date());
 
 		PGPDigestCalculator sha1Calculator = new JcaPGPDigestCalculatorProviderBuilder().build()
 				.get(HashAlgorithmTags.SHA1);
 		PGPContentSignerBuilder csBuilder = new JcaPGPContentSignerBuilder(dsaKeyPair.getPublicKey().getAlgorithm(),
-				HashAlgorithmTags.SHA1);
+				HashAlgorithmTags.SHA256);
 		PBESecretKeyEncryptor skEncryptor = new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.CAST5, sha1Calculator)
-				.setProvider("BC").build(passPhrase.toCharArray());
+				.setProvider(new BouncyCastleProvider()).build(passPhrase);
 
 		PGPKeyRingGenerator krg = new PGPKeyRingGenerator(PGPSignature.POSITIVE_CERTIFICATION, dsaKeyPair, identity,
 				sha1Calculator, null, null, csBuilder, skEncryptor);
-
+	
 		krg.addSubKey(egKeyPair);
 		return krg;
 	}
 
-	public static PGPSecretKeyRing generateKeyRing(String identity, String passPhrase, boolean armor, int dsaKeySize,
+	public static PGPSecretKeyRing generateKeyRing(String identity, char[] passPhrase, boolean armor, int dsaKeySize,
 			int elGamalKeySize) throws NoSuchAlgorithmException, NoSuchProviderException, PGPException {
 
 		PGPKeyRingGenerator keyRingGen = generateKeyRingGenerator(identity, passPhrase, armor, dsaKeySize, elGamalKeySize);
 		return keyRingGen.generateSecretKeyRing();
 	}
-
 }
