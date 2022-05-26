@@ -1,0 +1,5 @@
+
+TO-DO: krompir.asc
+sta ako se ne unese nikakva lozinka? (password regex)
+backup secret key?
+are you sure you want to exit prompt?
