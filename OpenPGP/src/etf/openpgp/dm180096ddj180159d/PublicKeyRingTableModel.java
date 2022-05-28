@@ -75,6 +75,10 @@ public class PublicKeyRingTableModel extends DefaultTableModel {
 		this.publicKeyRingList.remove(index);
 		removeRow(index);
 	}
+	
+	public PGPPublicKeyRing getPublicKeyRingByIndex(int index) {
+		return this.publicKeyRingList.get(index);
+	}
 
 	public List<PGPPublicKeyRing> getPublicKeyRingsByIndexes(List<Integer> indexes) {
 		List<PGPPublicKeyRing> list = new ArrayList<>();
