@@ -48,7 +48,7 @@ public class MainFrame extends JFrame {
 
 	public MainFrame() {
 		super("OpenPGP");
-
+		
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
@@ -152,12 +152,12 @@ public class MainFrame extends JFrame {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				JFileChooser chooser = new JFileChooser();
-				FileNameExtensionFilter filter = new FileNameExtensionFilter("OpenPGP encrypted files", "gpg");
+				FileNameExtensionFilter filter = new FileNameExtensionFilter("Text file", "txt");
 				chooser.setFileFilter(filter);
 
 				int returnVal = chooser.showOpenDialog(SwingUtilities.getWindowAncestor((Component) e.getSource()));
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
-					SignEncryptDialog signEncryptDialog = new SignEncryptDialog();
+					SignEncryptDialog signEncryptDialog = new SignEncryptDialog(tablePublicKeys, tableSecretKeys);
 					signEncryptDialog.setFile(chooser.getSelectedFile());
 					signEncryptDialog
 							.setLocationRelativeTo(SwingUtilities.getWindowAncestor((Component) e.getSource()));

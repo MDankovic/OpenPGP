@@ -79,6 +79,14 @@ public class PublicKeyRingTableModel extends DefaultTableModel {
 	public PGPPublicKeyRing getPublicKeyRingByIndex(int index) {
 		return this.publicKeyRingList.get(index);
 	}
+	
+	public String getPublicKeyString(int index) {
+		PGPPublicKeyRing pkr =  this.publicKeyRingList.get(index);
+		String userId = pkr.getPublicKey().getUserIDs().next();
+		String keyId = Long.toHexString(pkr.getPublicKey().getKeyID());
+		
+		return userId + "/" + keyId;
+	}
 
 	public List<PGPPublicKeyRing> getPublicKeyRingsByIndexes(List<Integer> indexes) {
 		List<PGPPublicKeyRing> list = new ArrayList<>();

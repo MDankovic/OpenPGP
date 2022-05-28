@@ -139,6 +139,14 @@ public class SecretKeyRingTableModel extends DefaultTableModel {
 	public PGPSecretKeyRing getSecretKeyRingByIndex(int index) {
 		return this.secretKeyRingList.get(index);
 	}
+	
+	public String getSecretKeyString(int index) {
+		PGPSecretKeyRing skr =  this.secretKeyRingList.get(index);
+		String userId = skr.getPublicKey().getUserIDs().next();
+		String keyId = Long.toHexString(skr.getPublicKey().getKeyID());
+		
+		return userId + "/" + keyId;
+	}
 
 	public PGPPrivateKey checkPasswordAndGetPrivateKey(PGPSecretKeyRing skr, char[] passphrase) throws PGPException {
 		PBESecretKeyDecryptor decryptorFactory = new BcPBESecretKeyDecryptorBuilder(new BcPGPDigestCalculatorProvider())
