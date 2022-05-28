@@ -70,10 +70,18 @@ public class PublicKeyRingTableModel extends DefaultTableModel {
 			addKeyRing(pkr);
 		}
 	}
-	
+
 	public void removeKeyRing(int index) {
 		this.publicKeyRingList.remove(index);
 		removeRow(index);
+	}
+
+	public List<PGPPublicKeyRing> getPublicKeyRingsByIndexes(List<Integer> indexes) {
+		List<PGPPublicKeyRing> list = new ArrayList<>();
+		for (Integer i : indexes) {
+			list.add(this.publicKeyRingList.get(i));
+		}
+		return list;
 	}
 
 }

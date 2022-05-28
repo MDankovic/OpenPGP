@@ -15,6 +15,7 @@ import javax.swing.table.DefaultTableModel;
 
 import org.bouncycastle.bcpg.ArmoredOutputStream;
 import org.bouncycastle.openpgp.PGPException;
+import org.bouncycastle.openpgp.PGPPrivateKey;
 import org.bouncycastle.openpgp.PGPPublicKey;
 import org.bouncycastle.openpgp.PGPPublicKeyRing;
 import org.bouncycastle.openpgp.PGPSecretKeyRing;
@@ -88,7 +89,7 @@ public class SecretKeyRingTableModel extends DefaultTableModel {
 		}
 	}
 
-	private String generateFilePath(PGPSecretKeyRing skr) {
+	public static String generateFilePath(PGPSecretKeyRing skr) {
 		// Because of out representation
 		String userId = skr.getPublicKey().getUserIDs().next();
 		String username = userId.split(" <")[0];
@@ -120,10 +121,8 @@ public class SecretKeyRingTableModel extends DefaultTableModel {
 		}
 	}
 
-	public void removeKeyRing(int index, char[] passPhrase) throws PGPException {
-		PBESecretKeyDecryptor decryptorFactory = new BcPBESecretKeyDecryptorBuilder(new BcPGPDigestCalculatorProvider())
-				.build(passPhrase);
-		this.secretKeyRingList.get(index).getSecretKey().extractPrivateKey(decryptorFactory);
+	public void removeKeyRing(int index, char[] passphrase) throws PGPException {
+		checkPasswordAndGetPrivateKey(this.secretKeyRingList.get(index), passphrase);
 
 		this.secretKeyRingList.remove(index);
 		removeRow(index);
@@ -135,5 +134,15 @@ public class SecretKeyRingTableModel extends DefaultTableModel {
 				.collect(Collectors.toList());
 
 		return new PGPPublicKeyRing(publicKeys);
+	}
+
+	public PGPSecretKeyRing getSecretKeyRingByIndex(int index) {
+		return this.secretKeyRingList.get(index);
+	}
+
+	public PGPPrivateKey checkPasswordAndGetPrivateKey(PGPSecretKeyRing skr, char[] passphrase) throws PGPException {
+		PBESecretKeyDecryptor decryptorFactory = new BcPBESecretKeyDecryptorBuilder(new BcPGPDigestCalculatorProvider())
+				.build(passphrase);
+		return skr.getSecretKey().extractPrivateKey(decryptorFactory);
 	}
 }
