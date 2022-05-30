@@ -65,7 +65,6 @@ public class SendOperation {
 
 			encryptionAlgorithm = SymmetricKeyAlgorithmTags.TRIPLE_DES;
 
-			// Encryption
 			encGen = new PGPEncryptedDataGenerator(
 					new JcePGPDataEncryptorBuilder(encryptionAlgorithm).setWithIntegrityPacket(true)
 							.setSecureRandom(new SecureRandom()).setProvider(new BouncyCastleProvider()));
