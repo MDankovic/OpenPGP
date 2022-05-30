@@ -136,10 +136,10 @@ public class SignEncryptDialog extends JDialog {
 		chckCompress.setBounds(20, 260, 120, 30);
 		contentPanel.add(chckCompress);
 
-		JCheckBox chckConversion = new JCheckBox("Convert");
-		chckConversion.setFont(new Font("Tahoma", Font.PLAIN, 16));
-		chckConversion.setBounds(20, 300, 120, 30);
-		contentPanel.add(chckConversion);
+		JCheckBox chckConvert = new JCheckBox("Convert");
+		chckConvert.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		chckConvert.setBounds(20, 300, 120, 30);
+		contentPanel.add(chckConvert);
 
 		JLabel lblCompressAlg = new JLabel();
 		lblCompressAlg.setText("ZIP");
@@ -164,12 +164,16 @@ public class SignEncryptDialog extends JDialog {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				SendOperation sOpr = new SendOperation(secretKeyRingTableModel, publicKeyRingTableModel);
-				
 				try {
-					for(int ind : listEncryptFor.getSelectedIndices()) {
-						sOpr.encryptMsg(file.getAbsolutePath(), listSignAs.getSelectedIndex(), ind, -1, pfPassword.getPassword(), 
-								chckSign.isSelected(), chckEncrypt.isSelected(), chckCompress.isSelected(), chckConversion.isSelected());
-					}	
+					if(chckEncrypt.isSelected()) {
+						for(int ind : listEncryptFor.getSelectedIndices()) {
+							sOpr.encryptMsg(file.getAbsolutePath(), listSignAs.getSelectedIndex(), ind, -1, pfPassword.getPassword(), 
+									chckSign.isSelected(), true, chckCompress.isSelected(), chckConvert.isSelected());
+						}
+					} else {
+						sOpr.encryptMsg(file.getAbsolutePath(), listSignAs.getSelectedIndex(), -1, -1, pfPassword.getPassword(), 
+								chckSign.isSelected(), false, chckCompress.isSelected(), chckConvert.isSelected());
+					}
 				} catch (PGPException | IOException e1) {
 					System.out.println("GRIJESKA PRILIKOM ENKRIPCIJE");
 					e1.printStackTrace();

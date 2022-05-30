@@ -9,6 +9,7 @@ import java.security.Security;
 import java.util.Date;
 import java.util.Iterator;
 
+import org.bouncycastle.bcpg.ArmoredOutputStream;
 import org.bouncycastle.bcpg.CompressionAlgorithmTags;
 import org.bouncycastle.bcpg.HashAlgorithmTags;
 import org.bouncycastle.bcpg.SymmetricKeyAlgorithmTags;
@@ -48,9 +49,16 @@ public class SendOperation {
 		Security.addProvider(new BouncyCastleProvider());
 
 		PGPSignatureGenerator sigGen = null;
-		FileOutputStream fileOutStream = new FileOutputStream(fileName + ".gpg");
+		PGPEncryptedDataGenerator encGen = null;
+		PGPCompressedDataGenerator comGen = null;
+		PGPLiteralDataGenerator litGen = null;
+		OutputStream fileOutStream = new FileOutputStream(fileName + ".gpg");
 		OutputStream encOutStream = fileOutStream;
-		
+
+		if (bConv) {
+			fileOutStream = new ArmoredOutputStream(fileOutStream);
+		}
+
 		// Encryption
 		if (bEncr) {
 			PGPPublicKeyRing pkr = pubModel.getPublicKeyRingByIndex(publicKeyIndex);
@@ -58,7 +66,7 @@ public class SendOperation {
 			encryptionAlgorithm = SymmetricKeyAlgorithmTags.TRIPLE_DES;
 
 			// Encryption
-			PGPEncryptedDataGenerator encGen = new PGPEncryptedDataGenerator(
+			encGen = new PGPEncryptedDataGenerator(
 					new JcePGPDataEncryptorBuilder(encryptionAlgorithm).setWithIntegrityPacket(true)
 							.setSecureRandom(new SecureRandom()).setProvider(new BouncyCastleProvider()));
 
@@ -80,14 +88,13 @@ public class SendOperation {
 		}
 
 		// Compression
-		PGPCompressedDataGenerator comGen;
-		if(bCompr) {
+		if (bCompr) {
 			comGen = new PGPCompressedDataGenerator(CompressionAlgorithmTags.ZIP);
 		} else {
 			comGen = new PGPCompressedDataGenerator(CompressionAlgorithmTags.UNCOMPRESSED);
-			
+
 		}
-		
+
 		OutputStream comOutStream = comGen.open(encOutStream, new byte[1 << 16]);
 
 		if (bAuth) {
@@ -98,7 +105,7 @@ public class SendOperation {
 			PGPPrivateKey privKey = secModel.checkPasswordAndGetPrivateKey(skr, passphrase);
 
 			sigGen = new PGPSignatureGenerator(
-					new JcaPGPContentSignerBuilder(skr.getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA1));
+					new JcaPGPContentSignerBuilder(skr.getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA256));
 
 			sigGen.init(PGPSignature.BINARY_DOCUMENT, privKey);
 
@@ -108,36 +115,37 @@ public class SendOperation {
 			spGen.addSignerUserID(false, userId);
 			sigGen.setHashedSubpackets(spGen.generate());
 			sigGen.generateOnePassVersion(false).encode(comOutStream);
+			System.out.println("potpisano jeblo majku");
 		}
 
-		PGPLiteralDataGenerator litGen = new PGPLiteralDataGenerator();
-		OutputStream litOutStream = litGen.open(encOutStream, PGPLiteralData.BINARY, fileName, 1 << 16, new Date());
+		litGen = new PGPLiteralDataGenerator();
+		OutputStream litOutStream = litGen.open(comOutStream, PGPLiteralData.BINARY, fileName, new Date(), new byte[1 << 16]);
 
 		FileInputStream fileInStream = new FileInputStream(fileName);
 		byte[] byteArray = new byte[1 << 16];
 		int inputLen;
 		while ((inputLen = fileInStream.read(byteArray)) > 0) {
 			litOutStream.write(byteArray, 0, inputLen);
-			
-			if(bAuth) {
+			System.out.println("RADI");
+			if (bAuth) {
 				sigGen.update(byteArray, 0, inputLen);
 			}
 		}
 		fileInStream.close();
-		litOutStream.close();
-		
-		if(bAuth) {
+		litGen.close();
+
+		if (bAuth) {
 			sigGen.generate().encode(comOutStream);
 		}
-		
-		if(bCompr) {
-			comOutStream.close();	
+
+		if (bCompr) {
+			comGen.close();
 		}
-		
-		if(bEncr) {
-			encOutStream.close();	
+
+		if (bEncr) {
+			encGen.close();
 		}
-				
+
 		fileOutStream.close();
 	}
 }

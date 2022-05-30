@@ -54,6 +54,10 @@ public class SecretKeyRingTableModel extends DefaultTableModel {
 		keyId = Long.toHexString(skr.getPublicKey().getKeyID()).toUpperCase();
 		StringBuilder sbuild = new StringBuilder();
 
+		for (int i = keyId.length(); i < 16; i++) {
+			sbuild.append('0');
+		}
+
 		for (int i = 0; i < 16; i += 4) {
 			sbuild.append(keyId.substring(i, i + 4) + " ");
 		}
@@ -139,12 +143,12 @@ public class SecretKeyRingTableModel extends DefaultTableModel {
 	public PGPSecretKeyRing getSecretKeyRingByIndex(int index) {
 		return this.secretKeyRingList.get(index);
 	}
-	
+
 	public String getSecretKeyString(int index) {
-		PGPSecretKeyRing skr =  this.secretKeyRingList.get(index);
+		PGPSecretKeyRing skr = this.secretKeyRingList.get(index);
 		String userId = skr.getPublicKey().getUserIDs().next();
 		String keyId = Long.toHexString(skr.getPublicKey().getKeyID());
-		
+
 		return userId + "/" + keyId;
 	}
 
