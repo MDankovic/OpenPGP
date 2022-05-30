@@ -1,18 +1,18 @@
 package etf.openpgp.dm180096ddj180159d;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.SecureRandom;
+import java.security.Security;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 
-import org.bouncycastle.bcpg.ArmoredOutputStream;
 import org.bouncycastle.bcpg.CompressionAlgorithmTags;
 import org.bouncycastle.bcpg.HashAlgorithmTags;
+import org.bouncycastle.bcpg.SymmetricKeyAlgorithmTags;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openpgp.PGPCompressedDataGenerator;
 import org.bouncycastle.openpgp.PGPEncryptedDataGenerator;
 import org.bouncycastle.openpgp.PGPException;
@@ -40,72 +40,98 @@ public class SendOperation {
 		this.pubModel = pubModel;
 	}
 
-	public void encryptMsg(String fileName, int secretKeyIndex, List<Integer> publicKeyIndexes, int encryptionAlgorithm,
-			char[] passphrase) throws PGPException, IOException {
+	@SuppressWarnings("resource")
+	public void encryptMsg(String fileName, int secretKeyIndex, int publicKeyIndex, int encryptionAlgorithm,
+			char[] passphrase, boolean bAuth, boolean bEncr, boolean bCompr, boolean bConv)
+			throws PGPException, IOException {
 
-		PGPSecretKeyRing skr = secModel.getSecretKeyRingByIndex(secretKeyIndex);
-		List<PGPPublicKeyRing> pkrList = pubModel.getPublicKeyRingsByIndexes(publicKeyIndexes);
+		Security.addProvider(new BouncyCastleProvider());
 
-		// Signing process.
-		// Extraction of DSA private key
-		PGPSecretKey secKey = skr.getSecretKey();
-		PGPPrivateKey privKey = secModel.checkPasswordAndGetPrivateKey(skr, passphrase);
+		PGPSignatureGenerator sigGen = null;
+		FileOutputStream fileOutStream = new FileOutputStream(fileName + ".gpg");
+		OutputStream encOutStream = fileOutStream;
 
-		PGPSignatureGenerator sigGen = new PGPSignatureGenerator(
-				new JcaPGPContentSignerBuilder(skr.getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA256));
+		if (bEncr) {
+			PGPPublicKeyRing pkr = pubModel.getPublicKeyRingByIndex(publicKeyIndex);
 
-		sigGen.init(PGPSignature.BINARY_DOCUMENT, privKey);
+			encryptionAlgorithm = SymmetricKeyAlgorithmTags.TRIPLE_DES;
 
-		String userId = secKey.getPublicKey().getUserIDs().next();
-		PGPSignatureSubpacketGenerator spGen = new PGPSignatureSubpacketGenerator();
+			// Encryption
+			PGPEncryptedDataGenerator encGen = new PGPEncryptedDataGenerator(
+					new JcePGPDataEncryptorBuilder(encryptionAlgorithm).setWithIntegrityPacket(true)
+							.setSecureRandom(new SecureRandom()).setProvider(new BouncyCastleProvider()));
 
-		spGen.addSignerUserID(false, userId);
-		sigGen.setHashedSubpackets(spGen.generate());
-
-		
-	    // Compress
-		//??
-		
-	    byte[] bytes = new byte[2000];
-//		compressFile(fileName, CompressionAlgorithmTags.ZIP);
-	    
-	    
-		// Encryption process.
-		PGPEncryptedDataGenerator encGen = new PGPEncryptedDataGenerator(
-				new JcePGPDataEncryptorBuilder(encryptionAlgorithm).setWithIntegrityPacket(true)
-						.setSecureRandom(new SecureRandom()).setProvider("BC"));
-
-		for (PGPPublicKeyRing pkr : pkrList) {
 			// Extraction of ElGamal public key
+			PGPPublicKey encrKey = null;
 			Iterator<PGPPublicKey> it = pkr.getPublicKeys();
-			it.next();
-			PGPPublicKey pubKey = it.next();
-			encGen.addMethod(new JcePublicKeyKeyEncryptionMethodGenerator(pubKey).setProvider("BC"));
-		}
+			while (it.hasNext()) {
+				encrKey = it.next();
+				if (encrKey.isEncryptionKey())
+					break;
+			}
 
-		// nesto sa strimovima
-	    ByteArrayOutputStream encryptedOutputStream = new ByteArrayOutputStream();
-	    OutputStream encOut = encGen.open(encryptedOutputStream, bytes);
-	    encOut.write(bytes);
-	    encOut.close();
-	    byte[] bytesEncrypted = encryptedOutputStream.toByteArray();
-	    encryptedOutputStream.close();
+			if (encrKey != null) {
+				encGen.addMethod(
+						new JcePublicKeyKeyEncryptionMethodGenerator(encrKey).setProvider(new BouncyCastleProvider()));
+				encOutStream = encGen.open(fileOutStream, new byte[1 << 16]);
+			}
+
+		}
 
 		// Compression
-		final PGPCompressedDataGenerator comGen = new PGPCompressedDataGenerator(CompressionAlgorithmTags.ZIP);
-		final PGPLiteralDataGenerator litGen = new PGPLiteralDataGenerator();
-		final byte[] buffer = new byte[1 << 16];
-		final OutputStream pOut = litGen.open(comGen.open(encOut), PGPLiteralData.BINARY, "", new Date(), buffer);
+		final PGPCompressedDataGenerator comGen = new PGPCompressedDataGenerator(
+				bCompr ? CompressionAlgorithmTags.ZIP : CompressionAlgorithmTags.UNCOMPRESSED);
+		OutputStream comOutStream = comGen.open(encOutStream, new byte[1 << 16]);
 
-		try (ArmoredOutputStream out = new ArmoredOutputStream(
-				new FileOutputStream(SecretKeyRingTableModel.generateFilePath(skr) + "-sent_message.asc"));) {
+		if (bAuth) {
+			// Signing
+			PGPSecretKeyRing skr = secModel.getSecretKeyRingByIndex(secretKeyIndex);
+			// Extraction of DSA private key
+			PGPSecretKey secKey = skr.getSecretKey();
+			PGPPrivateKey privKey = secModel.checkPasswordAndGetPrivateKey(skr, passphrase);
 
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			sigGen = new PGPSignatureGenerator(
+					new JcaPGPContentSignerBuilder(skr.getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA1));
+
+			sigGen.init(PGPSignature.BINARY_DOCUMENT, privKey);
+
+			String userId = secKey.getPublicKey().getUserIDs().next();
+			PGPSignatureSubpacketGenerator spGen = new PGPSignatureSubpacketGenerator();
+
+			spGen.addSignerUserID(false, userId);
+			sigGen.setHashedSubpackets(spGen.generate());
+			sigGen.generateOnePassVersion(false).encode(comOutStream);
 		}
+
+		PGPLiteralDataGenerator litGen = new PGPLiteralDataGenerator();
+		OutputStream litOutStream = litGen.open(encOutStream, PGPLiteralData.BINARY, fileName, 1 << 16, new Date());
+
+		FileInputStream fileInStream = new FileInputStream(fileName);
+		byte[] byteArray = new byte[1 << 16];
+		int inputLen;
+		while ((inputLen = fileInStream.read(byteArray)) > 0) {
+			litOutStream.write(byteArray, 0, inputLen);
+			
+			if(bAuth) {
+				sigGen.update(byteArray, 0, inputLen);
+			}
+		}
+		fileInStream.close();
+		litOutStream.close();
+		
+		if(bAuth) {
+			sigGen.generate().encode(comOutStream);
+		}
+		
+		if(bCompr) {
+			comOutStream.close();	
+		}
+		
+		if(bEncr) {
+			encOutStream.close();	
+		}
+				
+		
+		fileOutStream.close();
 	}
 }
