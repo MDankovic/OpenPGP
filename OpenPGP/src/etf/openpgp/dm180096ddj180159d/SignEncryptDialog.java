@@ -7,6 +7,7 @@ import java.awt.GridLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -20,6 +21,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
+
+import org.bouncycastle.openpgp.PGPException;
+
 import javax.swing.ScrollPaneConstants;
 
 @SuppressWarnings("serial")
@@ -159,7 +163,17 @@ public class SignEncryptDialog extends JDialog {
 		btnOk.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-
+				SendOperation sOpr = new SendOperation(secretKeyRingTableModel, publicKeyRingTableModel);
+				
+				try {
+					for(int ind : listEncryptFor.getSelectedIndices()) {
+						sOpr.encryptMsg(file.getAbsolutePath(), listSignAs.getSelectedIndex(), ind, -1, pfPassword.getPassword(), 
+								chckSign.isSelected(), chckEncrypt.isSelected(), chckCompress.isSelected(), chckConversion.isSelected());
+					}	
+				} catch (PGPException | IOException e1) {
+					System.out.println("GRIJESKA PRILIKOM ENKRIPCIJE");
+					e1.printStackTrace();
+				}
 			}
 		});
 		btnOk.setFont(new Font("Tahoma", Font.PLAIN, 16));

@@ -50,7 +50,8 @@ public class SendOperation {
 		PGPSignatureGenerator sigGen = null;
 		FileOutputStream fileOutStream = new FileOutputStream(fileName + ".gpg");
 		OutputStream encOutStream = fileOutStream;
-
+		
+		// Encryption
 		if (bEncr) {
 			PGPPublicKeyRing pkr = pubModel.getPublicKeyRingByIndex(publicKeyIndex);
 
@@ -79,8 +80,14 @@ public class SendOperation {
 		}
 
 		// Compression
-		final PGPCompressedDataGenerator comGen = new PGPCompressedDataGenerator(
-				bCompr ? CompressionAlgorithmTags.ZIP : CompressionAlgorithmTags.UNCOMPRESSED);
+		PGPCompressedDataGenerator comGen;
+		if(bCompr) {
+			comGen = new PGPCompressedDataGenerator(CompressionAlgorithmTags.ZIP);
+		} else {
+			comGen = new PGPCompressedDataGenerator(CompressionAlgorithmTags.UNCOMPRESSED);
+			
+		}
+		
 		OutputStream comOutStream = comGen.open(encOutStream, new byte[1 << 16]);
 
 		if (bAuth) {
@@ -131,7 +138,6 @@ public class SendOperation {
 			encOutStream.close();	
 		}
 				
-		
 		fileOutStream.close();
 	}
 }
