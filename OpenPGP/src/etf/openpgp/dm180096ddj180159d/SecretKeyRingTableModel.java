@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import javax.crypto.SecretKey;
 import javax.swing.table.DefaultTableModel;
 
 import org.bouncycastle.bcpg.ArmoredOutputStream;
@@ -55,7 +56,7 @@ public class SecretKeyRingTableModel extends DefaultTableModel {
 		StringBuilder sbuild = new StringBuilder();
 
 		for (int i = keyId.length(); i < 16; i++) {
-			sbuild.append('0');
+			keyId = "0" + keyId;
 		}
 
 		for (int i = 0; i < 16; i += 4) {
@@ -153,8 +154,25 @@ public class SecretKeyRingTableModel extends DefaultTableModel {
 	}
 
 	public PGPPrivateKey checkPasswordAndGetPrivateKey(PGPSecretKeyRing skr, char[] passphrase) throws PGPException {
+
+		if (skr == null)
+			return null;
+
 		PBESecretKeyDecryptor decryptorFactory = new BcPBESecretKeyDecryptorBuilder(new BcPGPDigestCalculatorProvider())
 				.build(passphrase);
 		return skr.getSecretKey().extractPrivateKey(decryptorFactory);
+	}
+
+	public PGPPrivateKey checkPasswordAndGetPrivateKey(long keyId, char[] passphrase) throws PGPException {
+
+		for (PGPSecretKeyRing skr : secretKeyRingList) {
+			if (keyId == skr.getPublicKey().getKeyID()) {
+				PBESecretKeyDecryptor decryptorFactory = new BcPBESecretKeyDecryptorBuilder(
+						new BcPGPDigestCalculatorProvider()).build(passphrase);
+				return skr.getSecretKey().extractPrivateKey(decryptorFactory);
+			}
+		}
+		return null;
+
 	}
 }

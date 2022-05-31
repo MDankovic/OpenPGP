@@ -55,6 +55,7 @@ public class SendOperation {
 		OutputStream fileOutStream = new FileOutputStream(fileName + ".gpg");
 		OutputStream encOutStream = fileOutStream;
 
+		// Conversion
 		if (bConv) {
 			fileOutStream = new ArmoredOutputStream(fileOutStream);
 		}
@@ -96,8 +97,8 @@ public class SendOperation {
 
 		OutputStream comOutStream = comGen.open(encOutStream, new byte[1 << 16]);
 
+		// Authentication
 		if (bAuth) {
-			// Signing
 			PGPSecretKeyRing skr = secModel.getSecretKeyRingByIndex(secretKeyIndex);
 			// Extraction of DSA private key
 			PGPSecretKey secKey = skr.getSecretKey();

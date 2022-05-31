@@ -42,13 +42,12 @@ public class PublicKeyRingTableModel extends DefaultTableModel {
 		keyId = Long.toHexString(pkr.getPublicKey().getKeyID()).toUpperCase();
 		StringBuilder sbuild = new StringBuilder();
 
+		for (int i = keyId.length(); i < 16; i++) {
+			keyId = "0" + keyId;
+		}
+
 		for (int i = 0; i < 16; i += 4) {
-			if (keyId.length() > 15)
-				sbuild.append(keyId.substring(i, i + 4) + " ");
-			else {
-				sbuild.append(keyId);
-				break;
-			}
+			sbuild.append(keyId.substring(i, i + 4) + " ");
 		}
 		keyId = sbuild.deleteCharAt(sbuild.length() - 1).toString();
 
