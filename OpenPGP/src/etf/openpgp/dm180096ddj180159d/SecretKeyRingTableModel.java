@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import javax.crypto.SecretKey;
 import javax.swing.table.DefaultTableModel;
 
 import org.bouncycastle.bcpg.ArmoredOutputStream;
