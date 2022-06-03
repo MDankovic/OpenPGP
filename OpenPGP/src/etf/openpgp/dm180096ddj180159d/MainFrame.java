@@ -44,7 +44,6 @@ public class MainFrame extends JFrame {
 	private JTable tablePublicKeys;
 	private JTable tableSecretKeys;
 	private JTabbedPane tabbedPane;
-	private File file;
 
 	public MainFrame() {
 		super("OpenPGP");
@@ -182,7 +181,11 @@ public class MainFrame extends JFrame {
 
 				int returnVal = chooser.showOpenDialog(SwingUtilities.getWindowAncestor((Component) e.getSource()));
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
-					System.out.println("FILE processed");
+					DecryptVerifyDialog decryptVerifyDialog = new DecryptVerifyDialog(tablePublicKeys, tableSecretKeys);
+					decryptVerifyDialog.setFile(chooser.getSelectedFile());
+					decryptVerifyDialog
+							.setLocationRelativeTo(SwingUtilities.getWindowAncestor((Component) e.getSource()));
+					decryptVerifyDialog.setVisible(true);
 				} else {
 					JOptionPane.showMessageDialog(me, "No file has been selected.", "File Error",
 							JOptionPane.WARNING_MESSAGE);
@@ -313,14 +316,6 @@ public class MainFrame extends JFrame {
 		btnExportKey.setFont(new Font("Tahoma", Font.PLAIN, 16));
 		btnExportKey.setPreferredSize(new Dimension(40, 40));
 		panelButtons.add(btnExportKey);
-	}
-
-	public File getFile() {
-		return file;
-	}
-
-	public void setFile(File file) {
-		this.file = file;
 	}
 
 	public JTable getTablePublicKeys() {
