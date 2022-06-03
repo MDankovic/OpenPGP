@@ -129,4 +129,13 @@ public class DecryptVerifyDialog extends JDialog {
 		this.file = file;
 	}
 	
+	public static void main(String[] args) {
+		try {
+			DecryptVerifyDialog dialog = new DecryptVerifyDialog(null, null);
+			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			dialog.setVisible(true);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }

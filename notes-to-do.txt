@@ -1,5 +1,8 @@
 
-TO-DO: krompir.asc
-sta ako se ne unese nikakva lozinka? (password regex)
-backup secret key?
-are you sure you want to exit prompt?
+potvrda o dekripciji (info o potpisu verifikaciji itd)
+obavestenje u slcuaju greske
+no file selected
+
+import key duplikati public kljuceva
+
+import key da se baci fokus na tab i selektuje ubaceni kljuc, isto za new key pair
