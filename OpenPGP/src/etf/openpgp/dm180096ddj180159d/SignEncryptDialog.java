@@ -1,11 +1,10 @@
 package etf.openpgp.dm180096ddj180159d;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -19,22 +18,22 @@ import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
 import org.bouncycastle.bcpg.SymmetricKeyAlgorithmTags;
 import org.bouncycastle.openpgp.PGPException;
-import java.awt.Color;
 
 @SuppressWarnings("serial")
 public class SignEncryptDialog extends JDialog {
 
+	private SignEncryptDialog me;
 	private final JPanel contentPanel = new JPanel();
 	private JLabel lblSelectedFile;
 	private JPasswordField pfPassword;
@@ -44,6 +43,7 @@ public class SignEncryptDialog extends JDialog {
 
 	public SignEncryptDialog(JTable tablePublicKeys, JTable tableSecretKeys) {
 		this.setTitle("Sign/Encrypt Message");
+		this.me = this;
 		this.setResizable(false);
 		this.setModalityType(JDialog.DEFAULT_MODALITY_TYPE);
 
@@ -101,12 +101,12 @@ public class SignEncryptDialog extends JDialog {
 
 		int secRowCnt = secretKeyRingTableModel.getRowCount();
 		String[] signListArr = new String[secRowCnt];
-		
+
 		for (int i = 0; i < secRowCnt; i++) {
 			signListArr[i] = secretKeyRingTableModel.getSecretKeyString(i);
 		}
-		
-		JComboBox comboBox = new JComboBox(signListArr);
+
+		JComboBox<String> comboBox = new JComboBox<>(signListArr);
 		comboBox.setBackground(Color.WHITE);
 		comboBox.setFont(new Font("Tahoma", Font.PLAIN, 12));
 		comboBox.setBounds(200, 100, 310, 30);
@@ -179,23 +179,22 @@ public class SignEncryptDialog extends JDialog {
 		ButtonGroup radioGroupEncAlg = new ButtonGroup();
 		radioGroupEncAlg.add(rdbtnNewRadioButton);
 		radioGroupEncAlg.add(rdbtnNewRadioButton_1);
-	
 
 		JPanel buttonPane = new JPanel();
 		getContentPane().add(buttonPane, BorderLayout.SOUTH);
 		buttonPane.setLayout(new GridLayout(0, 2, 0, 0));
 
 		JButton btnOk = new JButton("OK");
-		this.getRootPane().setDefaultButton(btnOk);
-		btnOk.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyPressed(KeyEvent e) {
-				System.out.println("|TETSTSTSGSV");
-				if (e.getKeyCode() == KeyEvent.VK_ENTER)
-					sendOperationCallback(publicKeyRingTableModel, listEncryptFor, secretKeyRingTableModel, comboBox,
-							chckSign, chckEncrypt, chckCompress, chckConvert, rdbtnNewRadioButton);
-			}
-		});
+//		this.getRootPane().setDefaultButton(btnOk);
+//		btnOk.addKeyListener(new KeyAdapter() {
+//			@Override
+//			public void keyPressed(KeyEvent e) {
+//				System.out.println("|TETSTSTSGSV");
+//				if (e.getKeyCode() == KeyEvent.VK_ENTER)
+//					sendOperationCallback(publicKeyRingTableModel, listEncryptFor, secretKeyRingTableModel, comboBox,
+//							chckSign, chckEncrypt, chckCompress, chckConvert, rdbtnNewRadioButton);
+//			}
+//		});
 		btnOk.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -260,23 +259,36 @@ public class SignEncryptDialog extends JDialog {
 	}
 
 	private void sendOperationCallback(PublicKeyRingTableModel publicKeyRingTableModel, JList<String> listEncryptFor,
-			SecretKeyRingTableModel secretKeyRingTableModel, JComboBox comboBox, JCheckBox chckSign,
+			SecretKeyRingTableModel secretKeyRingTableModel, JComboBox<String> comboBox, JCheckBox chckSign,
 			JCheckBox chckEncrypt, JCheckBox chckCompress, JCheckBox chckConvert, JRadioButton rdBtn) {
-		SendOperation sOpr = new SendOperation(secretKeyRingTableModel, publicKeyRingTableModel);
+		SignEncryptOperation sOpr = new SignEncryptOperation(secretKeyRingTableModel, publicKeyRingTableModel);
 		try {
 			int encAlg = rdBtn.isSelected() ? SymmetricKeyAlgorithmTags.TRIPLE_DES : SymmetricKeyAlgorithmTags.CAST5;
 			if (chckEncrypt.isSelected()) {
-				for (int ind : listEncryptFor.getSelectedIndices()) {
-					sOpr.encryptMsg(file.getAbsolutePath(), comboBox.getSelectedIndex(), ind, encAlg,
-							pfPassword.getPassword(), chckSign.isSelected(), true, chckCompress.isSelected(),
-							chckConvert.isSelected());
-				}
+
+				int[] indices = listEncryptFor.getSelectedIndices();
+
+				if (indices.length == 0) {
+					throw new RecepientsNotSelectedException("Please select recepients, since encryption is selected.");
+				} else
+					for (int ind : indices) {
+						sOpr.signEncryptMsg(file.getAbsolutePath(), comboBox.getSelectedIndex(), ind, encAlg,
+								pfPassword.getPassword(), chckSign.isSelected(), true, chckCompress.isSelected(),
+								chckConvert.isSelected());
+					}
 			} else {
-				sOpr.encryptMsg(file.getAbsolutePath(), comboBox.getSelectedIndex(), -1, encAlg,
+				sOpr.signEncryptMsg(file.getAbsolutePath(), comboBox.getSelectedIndex(), -1, encAlg,
 						pfPassword.getPassword(), chckSign.isSelected(), false, chckCompress.isSelected(),
 						chckConvert.isSelected());
 			}
+			
+			JOptionPane.showMessageDialog(me, "File successfully signed/encrypted.", "Sign/Encrypt File",
+					JOptionPane.INFORMATION_MESSAGE);
 			dispose();
+		} catch (IncorrectPasswordException e1) {
+			JOptionPane.showMessageDialog(me, e1.getMessage(), "Sign/Encrypt File", JOptionPane.ERROR_MESSAGE);
+		} catch (RecepientsNotSelectedException e1) {
+			JOptionPane.showMessageDialog(me, e1.getMessage(), "Sign/Encrypt File", JOptionPane.ERROR_MESSAGE);
 		} catch (PGPException | IOException e1) {
 			System.out.println("GRIJESKA PRILIKOM ENKRIPCIJE");
 			e1.printStackTrace();

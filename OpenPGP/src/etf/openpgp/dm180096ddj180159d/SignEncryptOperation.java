@@ -31,20 +31,20 @@ import org.bouncycastle.openpgp.operator.jcajce.JcaPGPContentSignerBuilder;
 import org.bouncycastle.openpgp.operator.jcajce.JcePGPDataEncryptorBuilder;
 import org.bouncycastle.openpgp.operator.jcajce.JcePublicKeyKeyEncryptionMethodGenerator;
 
-public class SendOperation {
+public class SignEncryptOperation {
 
 	private SecretKeyRingTableModel secModel;
 	private PublicKeyRingTableModel pubModel;
 
-	public SendOperation(SecretKeyRingTableModel secModel, PublicKeyRingTableModel pubModel) {
+	public SignEncryptOperation(SecretKeyRingTableModel secModel, PublicKeyRingTableModel pubModel) {
 		this.secModel = secModel;
 		this.pubModel = pubModel;
 	}
 
 	@SuppressWarnings("resource")
-	public void encryptMsg(String fileName, int secretKeyIndex, int publicKeyIndex, int encryptionAlgorithm,
+	public void signEncryptMsg(String fileName, int secretKeyIndex, int publicKeyIndex, int encryptionAlgorithm,
 			char[] passphrase, boolean bAuth, boolean bEncr, boolean bCompr, boolean bConv)
-			throws PGPException, IOException {
+			throws PGPException, IncorrectPasswordException, IOException {
 
 		Security.addProvider(new BouncyCastleProvider());
 
@@ -52,7 +52,18 @@ public class SendOperation {
 		PGPEncryptedDataGenerator encGen = null;
 		PGPCompressedDataGenerator comGen = null;
 		PGPLiteralDataGenerator litGen = null;
-		OutputStream fileOutStream = new FileOutputStream(fileName + ".gpg");
+
+		PGPPublicKeyRing pkr = null;
+		String fileNameFinal = null;
+		if (bEncr) {
+			pkr = pubModel.getPublicKeyRingByIndex(publicKeyIndex);
+			fileNameFinal = fileName + '-' + pkr.getPublicKey().getUserIDs().next().split(" <")[0] + '-'
+					+ Long.toString(System.currentTimeMillis()) + ".gpg";
+		} else {
+			fileNameFinal = fileName + '-' + Long.toString(System.currentTimeMillis()) + ".gpg";
+		}
+
+		OutputStream fileOutStream = new FileOutputStream(fileNameFinal);
 		OutputStream encOutStream = fileOutStream;
 
 		// Conversion
@@ -62,8 +73,6 @@ public class SendOperation {
 
 		// Encryption
 		if (bEncr) {
-			PGPPublicKeyRing pkr = pubModel.getPublicKeyRingByIndex(publicKeyIndex);
-
 			encryptionAlgorithm = SymmetricKeyAlgorithmTags.TRIPLE_DES;
 
 			encGen = new PGPEncryptedDataGenerator(
@@ -99,6 +108,7 @@ public class SendOperation {
 
 		// Authentication
 		if (bAuth) {
+
 			PGPSecretKeyRing skr = secModel.getSecretKeyRingByIndex(secretKeyIndex);
 			// Extraction of DSA private key
 			PGPSecretKey secKey = skr.getSecretKey();
@@ -116,10 +126,12 @@ public class SendOperation {
 			sigGen.setHashedSubpackets(spGen.generate());
 			sigGen.generateOnePassVersion(false).encode(comOutStream);
 			System.out.println("potpisano jeblo majku");
+
 		}
 
 		litGen = new PGPLiteralDataGenerator();
-		OutputStream litOutStream = litGen.open(comOutStream, PGPLiteralData.BINARY, fileName, new Date(), new byte[1 << 16]);
+		OutputStream litOutStream = litGen.open(comOutStream, PGPLiteralData.BINARY, fileName, new Date(),
+				new byte[1 << 16]);
 
 		FileInputStream fileInStream = new FileInputStream(fileName);
 		byte[] byteArray = new byte[1 << 16];

@@ -126,7 +126,7 @@ public class SecretKeyRingTableModel extends DefaultTableModel {
 		}
 	}
 
-	public void removeKeyRing(int index, char[] passphrase) throws PGPException {
+	public void removeKeyRing(int index, char[] passphrase) throws IncorrectPasswordException {
 		checkPasswordAndGetPrivateKey(this.secretKeyRingList.get(index), passphrase);
 
 		this.secretKeyRingList.remove(index);
@@ -153,23 +153,33 @@ public class SecretKeyRingTableModel extends DefaultTableModel {
 		return userId + "/" + keyId;
 	}
 
-	public PGPPrivateKey checkPasswordAndGetPrivateKey(PGPSecretKeyRing skr, char[] passphrase) throws PGPException {
+	public PGPPrivateKey checkPasswordAndGetPrivateKey(PGPSecretKeyRing skr, char[] passphrase)
+			throws IncorrectPasswordException {
 
 		if (skr == null)
 			return null;
 
-		PBESecretKeyDecryptor decryptorFactory = new BcPBESecretKeyDecryptorBuilder(new BcPGPDigestCalculatorProvider())
-				.build(passphrase);
-		return skr.getSecretKey().extractPrivateKey(decryptorFactory);
+		try {
+			PBESecretKeyDecryptor decryptorFactory = new BcPBESecretKeyDecryptorBuilder(
+					new BcPGPDigestCalculatorProvider()).build(passphrase);
+			return skr.getSecretKey().extractPrivateKey(decryptorFactory);
+		} catch (PGPException e) {
+			throw new IncorrectPasswordException("Incorrect password.");
+		}
 	}
 
-	public PGPPrivateKey checkPasswordAndGetPrivateKey(long keyId, char[] passphrase) throws PGPException {
+	public PGPPrivateKey checkPasswordAndGetPrivateKey(long keyId, char[] passphrase)
+			throws IncorrectPasswordException {
 
 		for (PGPSecretKeyRing skr : secretKeyRingList) {
 			if (keyId == skr.getPublicKey().getKeyID()) {
-				PBESecretKeyDecryptor decryptorFactory = new BcPBESecretKeyDecryptorBuilder(
-						new BcPGPDigestCalculatorProvider()).build(passphrase);
-				return skr.getSecretKey().extractPrivateKey(decryptorFactory);
+				try {
+					PBESecretKeyDecryptor decryptorFactory = new BcPBESecretKeyDecryptorBuilder(
+							new BcPGPDigestCalculatorProvider()).build(passphrase);
+					return skr.getSecretKey().extractPrivateKey(decryptorFactory);
+				} catch (PGPException e) {
+					throw new IncorrectPasswordException("Incorrect password.");
+				}
 			}
 		}
 		return null;
