@@ -17,8 +17,6 @@ import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
-import org.bouncycastle.openpgp.PGPException;
-
 @SuppressWarnings("serial")
 public class DeleteKeyDialog extends JDialog {
 	private DeleteKeyDialog me;
@@ -63,13 +61,12 @@ public class DeleteKeyDialog extends JDialog {
 				SecretKeyRingTableModel model = (SecretKeyRingTableModel) tableSecretKeys.getModel();
 				try {
 					model.removeKeyRing(selectedRow, passwordField.getPassword());
-					JOptionPane.showMessageDialog(me, "Key successfully deleted.",
-							"Delete Key", JOptionPane.INFORMATION_MESSAGE);
+					JOptionPane.showMessageDialog(me, "Key successfully deleted.", "Delete Key",
+							JOptionPane.INFORMATION_MESSAGE);
 
 					dispose();
-				} catch (PGPException e1) {
-					JOptionPane.showMessageDialog(me, "Incorrect password.",
-							"Delete Key", JOptionPane.ERROR_MESSAGE);
+				} catch (IncorrectPasswordException e1) {
+					JOptionPane.showMessageDialog(me, e1.getMessage(), "Delete Key", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});

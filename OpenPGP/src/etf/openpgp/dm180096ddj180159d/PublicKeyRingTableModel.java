@@ -42,6 +42,10 @@ public class PublicKeyRingTableModel extends DefaultTableModel {
 		keyId = Long.toHexString(pkr.getPublicKey().getKeyID()).toUpperCase();
 		StringBuilder sbuild = new StringBuilder();
 
+		for (int i = keyId.length(); i < 16; i++) {
+			keyId = "0" + keyId;
+		}
+
 		for (int i = 0; i < 16; i += 4) {
 			sbuild.append(keyId.substring(i, i + 4) + " ");
 		}
@@ -75,16 +79,16 @@ public class PublicKeyRingTableModel extends DefaultTableModel {
 		this.publicKeyRingList.remove(index);
 		removeRow(index);
 	}
-	
+
 	public PGPPublicKeyRing getPublicKeyRingByIndex(int index) {
 		return this.publicKeyRingList.get(index);
 	}
-	
+
 	public String getPublicKeyString(int index) {
-		PGPPublicKeyRing pkr =  this.publicKeyRingList.get(index);
+		PGPPublicKeyRing pkr = this.publicKeyRingList.get(index);
 		String userId = pkr.getPublicKey().getUserIDs().next();
 		String keyId = Long.toHexString(pkr.getPublicKey().getKeyID());
-		
+
 		return userId + "/" + keyId;
 	}
 

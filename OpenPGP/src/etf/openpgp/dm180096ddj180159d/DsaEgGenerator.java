@@ -6,6 +6,7 @@ import java.security.NoSuchProviderException;
 import java.util.Date;
 
 import org.bouncycastle.bcpg.HashAlgorithmTags;
+import org.bouncycastle.bcpg.sig.KeyFlags;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openpgp.PGPEncryptedData;
 import org.bouncycastle.openpgp.PGPException;
@@ -14,6 +15,7 @@ import org.bouncycastle.openpgp.PGPKeyRingGenerator;
 import org.bouncycastle.openpgp.PGPPublicKey;
 import org.bouncycastle.openpgp.PGPSecretKeyRing;
 import org.bouncycastle.openpgp.PGPSignature;
+import org.bouncycastle.openpgp.PGPSignatureSubpacketGenerator;
 import org.bouncycastle.openpgp.operator.PBESecretKeyEncryptor;
 import org.bouncycastle.openpgp.operator.PGPContentSignerBuilder;
 import org.bouncycastle.openpgp.operator.PGPDigestCalculator;
@@ -43,17 +45,24 @@ public class DsaEgGenerator {
 		PBESecretKeyEncryptor skEncryptor = new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.CAST5, sha1Calculator)
 				.setProvider(new BouncyCastleProvider()).build(passPhrase);
 
+		PGPSignatureSubpacketGenerator encKeySignGen = new PGPSignatureSubpacketGenerator();
+		encKeySignGen.setKeyFlags(false, KeyFlags.ENCRYPT_COMMS | KeyFlags.ENCRYPT_STORAGE);
+
+		PGPSignatureSubpacketGenerator signKeySignGen = new PGPSignatureSubpacketGenerator();
+		encKeySignGen.setKeyFlags(false, KeyFlags.SIGN_DATA | KeyFlags.CERTIFY_OTHER);
+
 		PGPKeyRingGenerator krg = new PGPKeyRingGenerator(PGPSignature.POSITIVE_CERTIFICATION, dsaKeyPair, identity,
-				sha1Calculator, null, null, csBuilder, skEncryptor);
-	
-		krg.addSubKey(egKeyPair);
+				sha1Calculator, signKeySignGen.generate(), null, csBuilder, skEncryptor);
+
+		krg.addSubKey(egKeyPair, encKeySignGen.generate(), null);
 		return krg;
 	}
 
 	public static PGPSecretKeyRing generateKeyRing(String identity, char[] passPhrase, boolean armor, int dsaKeySize,
 			int elGamalKeySize) throws NoSuchAlgorithmException, NoSuchProviderException, PGPException {
 
-		PGPKeyRingGenerator keyRingGen = generateKeyRingGenerator(identity, passPhrase, armor, dsaKeySize, elGamalKeySize);
+		PGPKeyRingGenerator keyRingGen = generateKeyRingGenerator(identity, passPhrase, armor, dsaKeySize,
+				elGamalKeySize);
 		return keyRingGen.generateSecretKeyRing();
 	}
 }

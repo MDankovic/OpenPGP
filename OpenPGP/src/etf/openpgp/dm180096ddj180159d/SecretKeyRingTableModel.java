@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import javax.crypto.SecretKey;
 import javax.swing.table.DefaultTableModel;
 
 import org.bouncycastle.bcpg.ArmoredOutputStream;
@@ -53,6 +54,10 @@ public class SecretKeyRingTableModel extends DefaultTableModel {
 
 		keyId = Long.toHexString(skr.getPublicKey().getKeyID()).toUpperCase();
 		StringBuilder sbuild = new StringBuilder();
+
+		for (int i = keyId.length(); i < 16; i++) {
+			keyId = "0" + keyId;
+		}
 
 		for (int i = 0; i < 16; i += 4) {
 			sbuild.append(keyId.substring(i, i + 4) + " ");
@@ -121,7 +126,7 @@ public class SecretKeyRingTableModel extends DefaultTableModel {
 		}
 	}
 
-	public void removeKeyRing(int index, char[] passphrase) throws PGPException {
+	public void removeKeyRing(int index, char[] passphrase) throws IncorrectPasswordException {
 		checkPasswordAndGetPrivateKey(this.secretKeyRingList.get(index), passphrase);
 
 		this.secretKeyRingList.remove(index);
@@ -139,18 +144,45 @@ public class SecretKeyRingTableModel extends DefaultTableModel {
 	public PGPSecretKeyRing getSecretKeyRingByIndex(int index) {
 		return this.secretKeyRingList.get(index);
 	}
-	
+
 	public String getSecretKeyString(int index) {
-		PGPSecretKeyRing skr =  this.secretKeyRingList.get(index);
+		PGPSecretKeyRing skr = this.secretKeyRingList.get(index);
 		String userId = skr.getPublicKey().getUserIDs().next();
 		String keyId = Long.toHexString(skr.getPublicKey().getKeyID());
-		
+
 		return userId + "/" + keyId;
 	}
 
-	public PGPPrivateKey checkPasswordAndGetPrivateKey(PGPSecretKeyRing skr, char[] passphrase) throws PGPException {
-		PBESecretKeyDecryptor decryptorFactory = new BcPBESecretKeyDecryptorBuilder(new BcPGPDigestCalculatorProvider())
-				.build(passphrase);
-		return skr.getSecretKey().extractPrivateKey(decryptorFactory);
+	public PGPPrivateKey checkPasswordAndGetPrivateKey(PGPSecretKeyRing skr, char[] passphrase)
+			throws IncorrectPasswordException {
+
+		if (skr == null)
+			return null;
+
+		try {
+			PBESecretKeyDecryptor decryptorFactory = new BcPBESecretKeyDecryptorBuilder(
+					new BcPGPDigestCalculatorProvider()).build(passphrase);
+			return skr.getSecretKey().extractPrivateKey(decryptorFactory);
+		} catch (PGPException e) {
+			throw new IncorrectPasswordException("Incorrect password.");
+		}
+	}
+
+	public PGPPrivateKey checkPasswordAndGetPrivateKey(long keyId, char[] passphrase)
+			throws IncorrectPasswordException {
+
+		for (PGPSecretKeyRing skr : secretKeyRingList) {
+			if (keyId == skr.getPublicKey().getKeyID()) {
+				try {
+					PBESecretKeyDecryptor decryptorFactory = new BcPBESecretKeyDecryptorBuilder(
+							new BcPGPDigestCalculatorProvider()).build(passphrase);
+					return skr.getSecretKey().extractPrivateKey(decryptorFactory);
+				} catch (PGPException e) {
+					throw new IncorrectPasswordException("Incorrect password.");
+				}
+			}
+		}
+		return null;
+
 	}
 }

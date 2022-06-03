@@ -13,6 +13,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JRadioButton;
@@ -26,6 +27,7 @@ import org.bouncycastle.openpgp.PGPException;
 @SuppressWarnings("serial")
 public class NewKeyPairDialog extends JDialog {
 
+	private NewKeyPairDialog me;
 	private final JPanel contentPanel = new JPanel();
 	private JPasswordField pfPassword;
 	private JTextField tfEmail;
@@ -33,7 +35,8 @@ public class NewKeyPairDialog extends JDialog {
 	private JTable tableSecretKeys;
 
 	public NewKeyPairDialog() {
-		this.setTitle("Generate Key-Pair");
+		this.setTitle("New Key-Pair");
+		this.me = this;
 		this.setResizable(false);
 		this.setModalityType(JDialog.DEFAULT_MODALITY_TYPE);
 
@@ -122,7 +125,7 @@ public class NewKeyPairDialog extends JDialog {
 		ButtonGroup radioGroupDSA = new ButtonGroup();
 		radioGroupDSA.add(rdbtn1024DSA);
 		radioGroupDSA.add(rdbtn2048DSA);
-		
+
 		ButtonGroup radioGroupElGamal = new ButtonGroup();
 		radioGroupElGamal.add(rdbtn1024ElGamal);
 		radioGroupElGamal.add(rdbtn2048ElGamal);
@@ -137,31 +140,46 @@ public class NewKeyPairDialog extends JDialog {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				SecretKeyRingTableModel model = (SecretKeyRingTableModel) tableSecretKeys.getModel();
-				
-				int dsaKeySize = 1024;
-				int egKeySize = 1024;
-				
-				if(rdbtn2048DSA.isSelected())
-					dsaKeySize = 2048;
-				
-				if(rdbtn2048ElGamal.isSelected())
-					egKeySize = 2048;
-				else if(rdbtn4096ElGamal.isSelected())
-					egKeySize = 4096;
-				
-				String user = tfName.getText();
-				String email = tfEmail.getText();
-				String userId = user + " <" + email +">";
-				
-				char[] passPhrase = pfPassword.getPassword();
-				
 				try {
+					int dsaKeySize = 1024;
+					int egKeySize = 1024;
+
+					if (rdbtn2048DSA.isSelected())
+						dsaKeySize = 2048;
+
+					if (rdbtn2048ElGamal.isSelected())
+						egKeySize = 2048;
+					else if (rdbtn4096ElGamal.isSelected())
+						egKeySize = 4096;
+
+					String error = "";
+					String user = tfName.getText();
+					String email = tfEmail.getText();
+					char[] passPhrase = pfPassword.getPassword();
+
+					if ("".equals(user))
+						error += "Name field must not be empty.\n";
+					if ("".equals(email))
+						error += "Email field must not be empty.\n";
+					if (passPhrase.length == 0)
+						error += "Password field must not be empty.";
+
+					if (error != "")
+						throw new IncorrectPasswordException(error);
+
+					String userId = user + " <" + email + ">";
 					model.addKeyRing(DsaEgGenerator.generateKeyRing(userId, passPhrase, false, dsaKeySize, egKeySize));
+
+					JOptionPane.showMessageDialog(me, "New key-pair successfully generated.", "New Key-Pair",
+							JOptionPane.INFORMATION_MESSAGE);
+					dispose();
+
+				} catch (IncorrectPasswordException e1) {
+					JOptionPane.showMessageDialog(me, e1.getMessage(), "New Key-Pair", JOptionPane.ERROR_MESSAGE);
 				} catch (NoSuchAlgorithmException | NoSuchProviderException | PGPException e1) {
 					e1.printStackTrace();
 				}
-				
-				dispose();
+
 			}
 		});
 		btnOk.setFont(new Font("Tahoma", Font.PLAIN, 16));
