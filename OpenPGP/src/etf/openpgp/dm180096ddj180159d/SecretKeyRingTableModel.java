@@ -186,19 +186,6 @@ public class SecretKeyRingTableModel extends DefaultTableModel {
 		return null;
 
 	}
-
-	public PGPPrivateKey checkPasswordAndGetPrivateKey(long keyId, char[] passphrase) throws PGPException {
-
-		for (PGPSecretKeyRing skr : secretKeyRingList) {
-			if (keyId == skr.getPublicKey().getKeyID()) {
-				PBESecretKeyDecryptor decryptorFactory = new BcPBESecretKeyDecryptorBuilder(
-						new BcPGPDigestCalculatorProvider()).build(passphrase);
-				return skr.getSecretKey().extractPrivateKey(decryptorFactory);
-			}
-		}
-		return null;
-
-	}
 	
 	public PGPPrivateKey checkPasswordAndGetPrivateKeyEncryption(long keyId, char[] passphrase) throws PGPException {
 
