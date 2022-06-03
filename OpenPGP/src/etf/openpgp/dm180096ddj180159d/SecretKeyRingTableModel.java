@@ -19,6 +19,7 @@ import org.bouncycastle.openpgp.PGPException;
 import org.bouncycastle.openpgp.PGPPrivateKey;
 import org.bouncycastle.openpgp.PGPPublicKey;
 import org.bouncycastle.openpgp.PGPPublicKeyRing;
+import org.bouncycastle.openpgp.PGPSecretKey;
 import org.bouncycastle.openpgp.PGPSecretKeyRing;
 import org.bouncycastle.openpgp.PGPSecretKeyRingCollection;
 import org.bouncycastle.openpgp.operator.PBESecretKeyDecryptor;
@@ -170,6 +171,26 @@ public class SecretKeyRingTableModel extends DefaultTableModel {
 				PBESecretKeyDecryptor decryptorFactory = new BcPBESecretKeyDecryptorBuilder(
 						new BcPGPDigestCalculatorProvider()).build(passphrase);
 				return skr.getSecretKey().extractPrivateKey(decryptorFactory);
+			}
+		}
+		return null;
+
+	}
+	
+	public PGPPrivateKey checkPasswordAndGetPrivateKeyEncryption(long keyId, char[] passphrase) throws PGPException {
+
+		for (PGPSecretKeyRing skr : secretKeyRingList) {
+			Iterator<PGPPublicKey> it = skr.getPublicKeys();
+			it.next();
+			if (keyId == it.next().getKeyID()) {
+				PBESecretKeyDecryptor decryptorFactory = new BcPBESecretKeyDecryptorBuilder(
+						new BcPGPDigestCalculatorProvider()).build(passphrase);
+				
+				Iterator<PGPSecretKey> it1 = skr.getSecretKeys();
+				it1.next();
+				PGPSecretKey elGamalKey = it1.next();
+				
+				return elGamalKey.extractPrivateKey(decryptorFactory);
 			}
 		}
 		return null;

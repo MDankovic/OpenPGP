@@ -44,11 +44,10 @@ public class MainFrame extends JFrame {
 	private JTable tablePublicKeys;
 	private JTable tableSecretKeys;
 	private JTabbedPane tabbedPane;
-	private File file;
 
 	public MainFrame() {
 		super("OpenPGP");
-		
+
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
@@ -182,7 +181,11 @@ public class MainFrame extends JFrame {
 
 				int returnVal = chooser.showOpenDialog(SwingUtilities.getWindowAncestor((Component) e.getSource()));
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
-					System.out.println("FILE processed");
+					DecryptVerifyDialog decryptVerifyDialog = new DecryptVerifyDialog(tablePublicKeys, tableSecretKeys);
+					decryptVerifyDialog.setFile(chooser.getSelectedFile());
+					decryptVerifyDialog
+							.setLocationRelativeTo(SwingUtilities.getWindowAncestor((Component) e.getSource()));
+					decryptVerifyDialog.setVisible(true);
 				} else {
 					JOptionPane.showMessageDialog(me, "No file has been selected.", "File Error",
 							JOptionPane.WARNING_MESSAGE);
@@ -213,19 +216,20 @@ public class MainFrame extends JFrame {
 			public void mouseClicked(MouseEvent e) {
 				int selectedTab = tabbedPane.getSelectedIndex();
 				int selectedRow = -1;
-				if(selectedTab == 0) {
+				if (selectedTab == 0) {
 					selectedRow = tableSecretKeys.getSelectedRow();
 					if (selectedRow != -1) {
 						DeleteKeyDialog deleteKeyDialog = new DeleteKeyDialog();
 						deleteKeyDialog.setTableSecretKeys(tableSecretKeys);
 						deleteKeyDialog.setSelectedRow(selectedRow);
-						deleteKeyDialog.setLocationRelativeTo(SwingUtilities.getWindowAncestor((Component) e.getSource()));
+						deleteKeyDialog
+								.setLocationRelativeTo(SwingUtilities.getWindowAncestor((Component) e.getSource()));
 						deleteKeyDialog.setVisible(true);
 					} else {
 						JOptionPane.showMessageDialog(me, "Please select the key you want to delete.", "Delete Key",
 								JOptionPane.WARNING_MESSAGE);
 					}
-				} else if(selectedTab == 1) {
+				} else if (selectedTab == 1) {
 					selectedRow = tablePublicKeys.getSelectedRow();
 					if (selectedRow != -1) {
 						PublicKeyRingTableModel model = (PublicKeyRingTableModel) tablePublicKeys.getModel();
@@ -235,7 +239,7 @@ public class MainFrame extends JFrame {
 					} else {
 						JOptionPane.showMessageDialog(me, "Please select the key you want to delete.", "Delete Key",
 								JOptionPane.WARNING_MESSAGE);
-					}	
+					}
 				}
 			}
 		});
@@ -308,14 +312,6 @@ public class MainFrame extends JFrame {
 		btnExportKey.setFont(new Font("Tahoma", Font.PLAIN, 16));
 		btnExportKey.setPreferredSize(new Dimension(40, 40));
 		panelButtons.add(btnExportKey);
-	}
-
-	public File getFile() {
-		return file;
-	}
-
-	public void setFile(File file) {
-		this.file = file;
 	}
 
 	public JTable getTablePublicKeys() {
