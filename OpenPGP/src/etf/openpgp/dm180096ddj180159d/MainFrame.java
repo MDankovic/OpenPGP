@@ -254,7 +254,7 @@ public class MainFrame extends JFrame {
 				JFileChooser chooser = new JFileChooser();
 				FileNameExtensionFilter filter = new FileNameExtensionFilter("OpenPGP exported key", "asc");
 				chooser.setFileFilter(filter);
-
+				
 				int returnVal = chooser.showOpenDialog(SwingUtilities.getWindowAncestor((Component) e.getSource()));
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 
@@ -281,14 +281,10 @@ public class MainFrame extends JFrame {
 //							modelSecret.addKeyRingList(secretKeyRingCollection);
 //
 						} catch (IOException | PGPException e2) {
-//							e2.printStackTrace();
 							JOptionPane.showMessageDialog(me, "File is invalid, no keys detected.", "Import Key",
 									JOptionPane.ERROR_MESSAGE);
 						}
 //					}
-				} else {
-					JOptionPane.showMessageDialog(me, "No file has been selected.", "Import Key",
-							JOptionPane.WARNING_MESSAGE);
 				}
 			}
 		});
