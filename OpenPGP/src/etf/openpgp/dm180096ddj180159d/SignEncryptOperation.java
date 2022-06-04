@@ -44,7 +44,7 @@ public class SignEncryptOperation {
 	@SuppressWarnings("resource")
 	public void signEncryptMsg(String fileName, int secretKeyIndex, int publicKeyIndex, int encryptionAlgorithm,
 			char[] passphrase, boolean bAuth, boolean bEncr, boolean bCompr, boolean bConv)
-			throws PGPException, IncorrectPasswordException, IOException {
+			throws PGPException, IllegalValueException, IOException {
 
 		Security.addProvider(new BouncyCastleProvider());
 

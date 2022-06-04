@@ -65,7 +65,7 @@ public class DeleteKeyDialog extends JDialog {
 							JOptionPane.INFORMATION_MESSAGE);
 
 					dispose();
-				} catch (IncorrectPasswordException e1) {
+				} catch (IllegalValueException e1) {
 					JOptionPane.showMessageDialog(me, e1.getMessage(), "Delete Key", JOptionPane.ERROR_MESSAGE);
 				}
 			}
