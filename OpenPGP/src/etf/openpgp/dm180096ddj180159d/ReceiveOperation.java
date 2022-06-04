@@ -37,9 +37,9 @@ public class ReceiveOperation {
 		this.pubModel = pubModel;
 	}
 
-	public void receiveMsg(String fileNameIn, char[] passphrase) throws PGPException, IOException {
+	public String receiveMsg(String fileNameIn, char[] passphrase) throws PGPException, IOException {
 
-		String fileNameOut = fileNameIn.substring(0, fileNameIn.length() - 4) + ".txt";
+		String fileNameOut = fileNameIn.substring(0, fileNameIn.length() - 4);
 
 		InputStream fileInStream = PGPUtil.getDecoderStream(new FileInputStream(fileNameIn));
 
@@ -101,9 +101,7 @@ public class ReceiveOperation {
 //		while ((len = fileInStream.read(byteArr)) > 0) {
 //			byteOutStream.write(byteArr);
 //		}
-		
 
-		
 		OutputStream fileOutStream = new FileOutputStream(fileNameOut);
 		fileOutStream.write(byteOutStream.toByteArray());
 		
@@ -115,9 +113,12 @@ public class ReceiveOperation {
 		
 		System.out.println(msg);
 		
+		String result = null;
+		
 		if (onePassSignList == null || signList == null) {
 			System.out.println("No signature.");
-			return;
+			result = "No signature";
+			return result;
 		}
 
 		PGPOnePassSignature onePassSign = onePassSignList.get(0);
@@ -127,14 +128,16 @@ public class ReceiveOperation {
 		onePassSign.update(msg);
 
 		String info = pubKey.getUserIDs().next();
-//		System.out.println(info);
 
 		if (onePassSign.verify(signList.get(0))) {
 			System.out.println("Signed by: " + info);
+			result = "Signed by: " + info;
 		} else {
 			System.out.println("Signature not verified");
+			result = "Signature not verified";
 		}
-
+		
+		return result;
 	}
 
 }
