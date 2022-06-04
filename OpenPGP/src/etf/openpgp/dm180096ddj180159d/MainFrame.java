@@ -259,7 +259,7 @@ public class MainFrame extends JFrame {
 				JFileChooser chooser = new JFileChooser();
 				FileNameExtensionFilter filter = new FileNameExtensionFilter("OpenPGP exported key", "asc");
 				chooser.setFileFilter(filter);
-				
+
 				int returnVal = chooser.showOpenDialog(SwingUtilities.getWindowAncestor((Component) e.getSource()));
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 

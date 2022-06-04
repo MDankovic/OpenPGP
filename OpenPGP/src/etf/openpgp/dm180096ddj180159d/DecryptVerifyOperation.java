@@ -27,17 +27,17 @@ import org.bouncycastle.openpgp.operator.jcajce.JcaPGPContentVerifierBuilderProv
 import org.bouncycastle.openpgp.operator.jcajce.JcePublicKeyDataDecryptorFactoryBuilder;
 import org.bouncycastle.util.io.Streams;
 
-public class ReceiveOperation {
+public class DecryptVerifyOperation {
 
 	private SecretKeyRingTableModel secModel;
 	private PublicKeyRingTableModel pubModel;
 
-	public ReceiveOperation(SecretKeyRingTableModel secModel, PublicKeyRingTableModel pubModel) {
+	public DecryptVerifyOperation(SecretKeyRingTableModel secModel, PublicKeyRingTableModel pubModel) {
 		this.secModel = secModel;
 		this.pubModel = pubModel;
 	}
 
-	public String receiveMsg(String fileNameIn, char[] passphrase) throws PGPException, IOException {
+	public String decryptVerifyMsg(String fileNameIn, char[] passphrase) throws PGPException, IOException {
 
 		String fileNameOut = fileNameIn.substring(0, fileNameIn.length() - 4);
 
@@ -97,15 +97,15 @@ public class ReceiveOperation {
 
 		OutputStream fileOutStream = new FileOutputStream(fileNameOut);
 		fileOutStream.write(byteOutStream.toByteArray());
-		
+
 		byte[] msg = byteOutStream.toByteArray();
 		byteOutStream.close();
 
 		fileInStream.close();
 		fileOutStream.close();
-		
+
 		String result = null;
-		
+
 		if (onePassSignList == null || signList == null) {
 			System.out.println("No signature.");
 			result = "No signature";
@@ -127,7 +127,7 @@ public class ReceiveOperation {
 			System.out.println("Signature not verified");
 			result = "Signature not verified";
 		}
-		
+
 		return result;
 	}
 

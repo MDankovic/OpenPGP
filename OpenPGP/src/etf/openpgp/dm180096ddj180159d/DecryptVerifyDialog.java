@@ -67,11 +67,11 @@ public class DecryptVerifyDialog extends JDialog {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				try {
-					ReceiveOperation decVer = new ReceiveOperation(
+					DecryptVerifyOperation decVer = new DecryptVerifyOperation(
 							(SecretKeyRingTableModel) (tableSecretKeys.getModel()),
 							(PublicKeyRingTableModel) (tablePublicKeys.getModel()));
 
-					String message = decVer.receiveMsg(file.getAbsolutePath(), passwordField.getPassword());
+					String message = decVer.decryptVerifyMsg(file.getAbsolutePath(), passwordField.getPassword());
 					JOptionPane.showMessageDialog(me, message, "Sign/Encrypt File", JOptionPane.INFORMATION_MESSAGE);
 					dispose();
 				} catch (PGPException e1) {

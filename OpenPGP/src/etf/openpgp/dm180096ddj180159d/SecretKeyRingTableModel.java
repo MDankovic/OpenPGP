@@ -168,8 +168,7 @@ public class SecretKeyRingTableModel extends DefaultTableModel {
 		}
 	}
 
-	public PGPPrivateKey checkPasswordAndGetPrivateKey(long keyId, char[] passphrase)
-			throws IllegalValueException {
+	public PGPPrivateKey checkPasswordAndGetPrivateKey(long keyId, char[] passphrase) throws IllegalValueException {
 
 		for (PGPSecretKeyRing skr : secretKeyRingList) {
 			if (keyId == skr.getPublicKey().getKeyID()) {
@@ -185,7 +184,7 @@ public class SecretKeyRingTableModel extends DefaultTableModel {
 		return null;
 
 	}
-	
+
 	public PGPPrivateKey checkPasswordAndGetPrivateKeyEncryption(long keyId, char[] passphrase) throws PGPException {
 
 		for (PGPSecretKeyRing skr : secretKeyRingList) {
@@ -194,7 +193,7 @@ public class SecretKeyRingTableModel extends DefaultTableModel {
 			if (keyId == it.next().getKeyID()) {
 				PBESecretKeyDecryptor decryptorFactory = new BcPBESecretKeyDecryptorBuilder(
 						new BcPGPDigestCalculatorProvider()).build(passphrase);
-				
+
 				Iterator<PGPSecretKey> it1 = skr.getSecretKeys();
 				it1.next();
 				PGPSecretKey elGamalKey = it1.next();
