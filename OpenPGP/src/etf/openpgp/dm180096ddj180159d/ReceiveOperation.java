@@ -55,7 +55,6 @@ public class ReceiveOperation {
 		for (Iterator<PGPEncryptedData> iter = encDataList.getEncryptedDataObjects(); privKey == null
 				&& iter.hasNext();) {
 			encData = (PGPPublicKeyEncryptedData) iter.next();
-			System.out.println(Long.toHexString(encData.getKeyID()));
 			privKey = secModel.checkPasswordAndGetPrivateKeyEncryption(encData.getKeyID(), passphrase);
 		}
 
@@ -96,12 +95,6 @@ public class ReceiveOperation {
 			signList = (PGPSignatureList) obj;
 		}
 
-//		int len;
-//		byte[] byteArr = new byte[1 << 16];
-//		while ((len = fileInStream.read(byteArr)) > 0) {
-//			byteOutStream.write(byteArr);
-//		}
-
 		OutputStream fileOutStream = new FileOutputStream(fileNameOut);
 		fileOutStream.write(byteOutStream.toByteArray());
 		
@@ -110,8 +103,6 @@ public class ReceiveOperation {
 
 		fileInStream.close();
 		fileOutStream.close();
-		
-		System.out.println(msg);
 		
 		String result = null;
 		
