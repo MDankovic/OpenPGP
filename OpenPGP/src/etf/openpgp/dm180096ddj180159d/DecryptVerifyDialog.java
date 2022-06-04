@@ -38,7 +38,7 @@ public class DecryptVerifyDialog extends JDialog {
 
 		this.tablePublicKeys = tablePublicKeys;
 		this.tableSecretKeys = tableSecretKeys;
-		
+
 		setBounds(100, 100, 340, 180);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -67,21 +67,21 @@ public class DecryptVerifyDialog extends JDialog {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				try {
-					ReceiveOperation decVer = new ReceiveOperation((SecretKeyRingTableModel)(tableSecretKeys.getModel()),
-							(PublicKeyRingTableModel)(tablePublicKeys.getModel()));
-					
-					decVer.receiveMsg(file.getAbsolutePath(), passwordField.getPassword());
-					
+					ReceiveOperation decVer = new ReceiveOperation(
+							(SecretKeyRingTableModel) (tableSecretKeys.getModel()),
+							(PublicKeyRingTableModel) (tablePublicKeys.getModel()));
+
+					String message = decVer.receiveMsg(file.getAbsolutePath(), passwordField.getPassword());
+					JOptionPane.showMessageDialog(me, message, "Sign/Encrypt File", JOptionPane.INFORMATION_MESSAGE);
 					dispose();
 				} catch (PGPException e1) {
-					e1.printStackTrace();
-					JOptionPane.showMessageDialog(me, "Error while decrypting file.",
-							"Decrypt/Verify File", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(me, "Error while decrypting file.", "Decrypt/Verify File",
+							JOptionPane.ERROR_MESSAGE);
 				} catch (IOException e2) {
-					JOptionPane.showMessageDialog(me, "Error while opening file.",
-							"Decrypt/Verify File", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(me, "Error while opening file.", "Decrypt/Verify File",
+							JOptionPane.ERROR_MESSAGE);
 				}
-				
+
 				dispose();
 			}
 		});
@@ -102,7 +102,6 @@ public class DecryptVerifyDialog extends JDialog {
 		btnCancel.setActionCommand("Cancel");
 		btnCancel.setPreferredSize(new Dimension(40, 40));
 		buttonPane.add(btnCancel);
-
 	}
 
 	public JTable getTableSecretKeys() {
@@ -112,7 +111,7 @@ public class DecryptVerifyDialog extends JDialog {
 	public void setTableSecretKeys(JTable tableSecretKeys) {
 		this.tableSecretKeys = tableSecretKeys;
 	}
-	
+
 	public JTable getTablePublicKeys() {
 		return tablePublicKeys;
 	}
@@ -128,7 +127,7 @@ public class DecryptVerifyDialog extends JDialog {
 	public void setFile(File file) {
 		this.file = file;
 	}
-	
+
 	public static void main(String[] args) {
 		try {
 			DecryptVerifyDialog dialog = new DecryptVerifyDialog(null, null);
