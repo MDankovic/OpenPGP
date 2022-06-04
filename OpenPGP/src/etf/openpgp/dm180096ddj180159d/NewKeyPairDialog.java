@@ -33,6 +33,7 @@ public class NewKeyPairDialog extends JDialog {
 	private JTextField tfEmail;
 	private JTextField tfName;
 	private JTable tableSecretKeys;
+	private MainFrame mainFrame;
 
 	public NewKeyPairDialog() {
 		this.setTitle("New Key-Pair");
@@ -165,16 +166,20 @@ public class NewKeyPairDialog extends JDialog {
 						error += "Password field must not be empty.";
 
 					if (error != "")
-						throw new IncorrectPasswordException(error);
+						throw new IllegalValueException(error);
 
 					String userId = user + " <" + email + ">";
 					model.addKeyRing(DsaEgGenerator.generateKeyRing(userId, passPhrase, false, dsaKeySize, egKeySize));
+
+					mainFrame.getTabbedPane().setSelectedIndex(0);
+					int index = tableSecretKeys.getRowCount() - 1;
+					tableSecretKeys.setRowSelectionInterval(index, index);
 
 					JOptionPane.showMessageDialog(me, "New key-pair successfully generated.", "New Key-Pair",
 							JOptionPane.INFORMATION_MESSAGE);
 					dispose();
 
-				} catch (IncorrectPasswordException e1) {
+				} catch (IllegalValueException e1) {
 					JOptionPane.showMessageDialog(me, e1.getMessage(), "New Key-Pair", JOptionPane.ERROR_MESSAGE);
 				} catch (NoSuchAlgorithmException | NoSuchProviderException | PGPException e1) {
 					e1.printStackTrace();
@@ -201,6 +206,14 @@ public class NewKeyPairDialog extends JDialog {
 		buttonPane.add(btnCancel);
 	}
 
+	public MainFrame getMainFrame() {
+		return mainFrame;
+	}
+
+	public void setMainFrame(MainFrame mainFrame) {
+		this.mainFrame = mainFrame;
+	}
+
 	public JTable getTableSecretKeys() {
 		return tableSecretKeys;
 	}
@@ -209,13 +222,4 @@ public class NewKeyPairDialog extends JDialog {
 		this.tableSecretKeys = tableSecretKeys;
 	}
 
-	public static void main(String[] args) {
-		try {
-			NewKeyPairDialog dialog = new NewKeyPairDialog();
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			dialog.setVisible(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 }

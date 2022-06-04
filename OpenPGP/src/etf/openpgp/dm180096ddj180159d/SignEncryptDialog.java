@@ -269,7 +269,7 @@ public class SignEncryptDialog extends JDialog {
 				int[] indices = listEncryptFor.getSelectedIndices();
 
 				if (indices.length == 0) {
-					throw new RecepientsNotSelectedException("Please select recepients, since encryption is selected.");
+					throw new IllegalValueException("Please select recepients, since encryption is selected.");
 				} else
 					for (int ind : indices) {
 						sOpr.signEncryptMsg(file.getAbsolutePath(), comboBox.getSelectedIndex(), ind, encAlg,
@@ -281,13 +281,11 @@ public class SignEncryptDialog extends JDialog {
 						pfPassword.getPassword(), chckSign.isSelected(), false, chckCompress.isSelected(),
 						chckConvert.isSelected());
 			}
-			
+
 			JOptionPane.showMessageDialog(me, "File successfully signed/encrypted.", "Sign/Encrypt File",
 					JOptionPane.INFORMATION_MESSAGE);
 			dispose();
-		} catch (IncorrectPasswordException e1) {
-			JOptionPane.showMessageDialog(me, e1.getMessage(), "Sign/Encrypt File", JOptionPane.ERROR_MESSAGE);
-		} catch (RecepientsNotSelectedException e1) {
+		} catch (IllegalValueException e1) {
 			JOptionPane.showMessageDialog(me, e1.getMessage(), "Sign/Encrypt File", JOptionPane.ERROR_MESSAGE);
 		} catch (PGPException | IOException e1) {
 			System.out.println("GRIJESKA PRILIKOM ENKRIPCIJE");

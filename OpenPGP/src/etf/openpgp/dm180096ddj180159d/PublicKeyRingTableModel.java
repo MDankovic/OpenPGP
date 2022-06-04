@@ -25,7 +25,15 @@ public class PublicKeyRingTableModel extends DefaultTableModel {
 		this.setColumnIdentifiers(columns);
 	}
 
-	public void addKeyRing(PGPPublicKeyRing pkr) {
+	public void addKeyRing(PGPPublicKeyRing pkr) throws IllegalValueException {
+
+		int size = this.publicKeyRingList.size();
+		for (int i = 0; i < size; i++) {
+			if (this.publicKeyRingList.get(i).getPublicKey().getKeyID() == pkr.getPublicKey().getKeyID()) {
+				throw new IllegalValueException("Public key already exists.");
+			}
+		}
+
 		this.publicKeyRingList.add(pkr);
 
 		String userId = pkr.getPublicKey().getUserIDs().next();
@@ -58,15 +66,16 @@ public class PublicKeyRingTableModel extends DefaultTableModel {
 		return new PGPPublicKeyRingCollection(publicKeyRingList);
 	}
 
-	public void setKeyRingList(PGPPublicKeyRingCollection keyRingCollection) {
+	public void setKeyRingList(PGPPublicKeyRingCollection keyRingCollection) throws IllegalValueException {
 		setRowCount(0);
 		this.addKeyRingList(keyRingCollection);
 	}
 
-	public void addKeyRingList(PGPPublicKeyRingCollection keyRingCollection) {
+	public void addKeyRingList(PGPPublicKeyRingCollection keyRingCollection) throws IllegalValueException {
 		List<PGPPublicKeyRing> keyRingList = new ArrayList<>();
 		Iterator<PGPPublicKeyRing> it = keyRingCollection.getKeyRings();
 		while (it.hasNext()) {
+
 			keyRingList.add(it.next());
 		}
 

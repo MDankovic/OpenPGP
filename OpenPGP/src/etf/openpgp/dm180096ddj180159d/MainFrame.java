@@ -44,6 +44,10 @@ public class MainFrame extends JFrame {
 	private JTable tableSecretKeys;
 	private JTabbedPane tabbedPane;
 
+	public JTabbedPane getTabbedPane() {
+		return tabbedPane;
+	}
+
 	public MainFrame() {
 		super("OpenPGP");
 
@@ -200,6 +204,7 @@ public class MainFrame extends JFrame {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				NewKeyPairDialog newKeyPairDialog = new NewKeyPairDialog();
+				newKeyPairDialog.setMainFrame(me);
 				newKeyPairDialog.setTableSecretKeys(tableSecretKeys);
 				newKeyPairDialog.setLocationRelativeTo(SwingUtilities.getWindowAncestor((Component) e.getSource()));
 				newKeyPairDialog.setVisible(true);
@@ -260,15 +265,23 @@ public class MainFrame extends JFrame {
 
 					try (ArmoredInputStream inPublic = new ArmoredInputStream(
 							new FileInputStream(chooser.getSelectedFile().getAbsolutePath()));) {
-						
+
 						// Try to import PUBLIC key
 						PGPPublicKeyRingCollection publicKeyRingCollection = new PGPPublicKeyRingCollection(inPublic,
 								new BcKeyFingerprintCalculator());
 						PublicKeyRingTableModel modelPublic = (PublicKeyRingTableModel) tablePublicKeys.getModel();
-						
-						if (!publicKeyRingCollection.getKeyRings().hasNext()) throw new PGPException("Empty list");
+
+						if (!publicKeyRingCollection.getKeyRings().hasNext())
+							throw new PGPException("");
 						modelPublic.addKeyRingList(publicKeyRingCollection);
-						
+
+						tabbedPane.setSelectedIndex(1);
+						int index = tablePublicKeys.getRowCount() - 1;
+						tablePublicKeys.setRowSelectionInterval(index, index);
+
+						JOptionPane.showMessageDialog(me, "Key successfully imported.", "Import Key",
+								JOptionPane.INFORMATION_MESSAGE);
+
 //					} catch (IOException | PGPException e1) {
 //						e1.printStackTrace();
 //						try (ArmoredInputStream inSecret = new ArmoredInputStream(
@@ -280,11 +293,13 @@ public class MainFrame extends JFrame {
 //							SecretKeyRingTableModel modelSecret = (SecretKeyRingTableModel) tableSecretKeys.getModel();
 //							modelSecret.addKeyRingList(secretKeyRingCollection);
 //
-						} catch (IOException | PGPException e2) {
+					} catch (IllegalValueException e2) {
+						JOptionPane.showMessageDialog(me, e2.getMessage(), "Import Key", JOptionPane.ERROR_MESSAGE);
+					} catch (IOException | PGPException e2) {
 //							e2.printStackTrace();
-							JOptionPane.showMessageDialog(me, "File is invalid, no keys detected.", "Import Key",
-									JOptionPane.ERROR_MESSAGE);
-						}
+						JOptionPane.showMessageDialog(me, "File is invalid, no keys detected.", "Import Key",
+								JOptionPane.ERROR_MESSAGE);
+					}
 //					}
 				} else {
 					JOptionPane.showMessageDialog(me, "No file has been selected.", "Import Key",

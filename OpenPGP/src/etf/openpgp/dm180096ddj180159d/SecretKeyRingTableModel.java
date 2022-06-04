@@ -126,7 +126,7 @@ public class SecretKeyRingTableModel extends DefaultTableModel {
 		}
 	}
 
-	public void removeKeyRing(int index, char[] passphrase) throws IncorrectPasswordException {
+	public void removeKeyRing(int index, char[] passphrase) throws IllegalValueException {
 		checkPasswordAndGetPrivateKey(this.secretKeyRingList.get(index), passphrase);
 
 		this.secretKeyRingList.remove(index);
@@ -154,7 +154,7 @@ public class SecretKeyRingTableModel extends DefaultTableModel {
 	}
 
 	public PGPPrivateKey checkPasswordAndGetPrivateKey(PGPSecretKeyRing skr, char[] passphrase)
-			throws IncorrectPasswordException {
+			throws IllegalValueException {
 
 		if (skr == null)
 			return null;
@@ -164,12 +164,12 @@ public class SecretKeyRingTableModel extends DefaultTableModel {
 					new BcPGPDigestCalculatorProvider()).build(passphrase);
 			return skr.getSecretKey().extractPrivateKey(decryptorFactory);
 		} catch (PGPException e) {
-			throw new IncorrectPasswordException("Incorrect password.");
+			throw new IllegalValueException("Incorrect password.");
 		}
 	}
 
 	public PGPPrivateKey checkPasswordAndGetPrivateKey(long keyId, char[] passphrase)
-			throws IncorrectPasswordException {
+			throws IllegalValueException {
 
 		for (PGPSecretKeyRing skr : secretKeyRingList) {
 			if (keyId == skr.getPublicKey().getKeyID()) {
@@ -178,7 +178,7 @@ public class SecretKeyRingTableModel extends DefaultTableModel {
 							new BcPGPDigestCalculatorProvider()).build(passphrase);
 					return skr.getSecretKey().extractPrivateKey(decryptorFactory);
 				} catch (PGPException e) {
-					throw new IncorrectPasswordException("Incorrect password.");
+					throw new IllegalValueException("Incorrect password.");
 				}
 			}
 		}
@@ -198,7 +198,7 @@ public class SecretKeyRingTableModel extends DefaultTableModel {
 				Iterator<PGPSecretKey> it1 = skr.getSecretKeys();
 				it1.next();
 				PGPSecretKey elGamalKey = it1.next();
-				
+
 				return elGamalKey.extractPrivateKey(decryptorFactory);
 			}
 		}
