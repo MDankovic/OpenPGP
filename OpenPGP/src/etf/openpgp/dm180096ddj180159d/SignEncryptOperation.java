@@ -73,8 +73,6 @@ public class SignEncryptOperation {
 
 		// Encryption
 		if (bEncr) {
-			encryptionAlgorithm = SymmetricKeyAlgorithmTags.TRIPLE_DES;
-
 			encGen = new PGPEncryptedDataGenerator(
 					new JcePGPDataEncryptorBuilder(encryptionAlgorithm).setWithIntegrityPacket(true)
 							.setSecureRandom(new SecureRandom()).setProvider(new BouncyCastleProvider()));
