@@ -48,27 +48,30 @@ public class DecryptVerifyOperation {
 
 		Object obj = factory.nextObject();
 
-		PGPEncryptedDataList encDataList = (PGPEncryptedDataList) (obj instanceof PGPEncryptedDataList ? obj
-				: factory.nextObject());
+		if (obj instanceof PGPEncryptedDataList) {
+			PGPEncryptedDataList encDataList = (PGPEncryptedDataList) obj;
+			PGPPublicKeyEncryptedData encData = null;
+			PGPPrivateKey privKey = null;
+			for (Iterator<PGPEncryptedData> iter = encDataList.getEncryptedDataObjects(); privKey == null
+					&& iter.hasNext();) {
+				encData = (PGPPublicKeyEncryptedData) iter.next();
+				privKey = secModel.checkPasswordAndGetPrivateKeyEncryption(encData.getKeyID(), passphrase);
+			}
 
-		PGPPublicKeyEncryptedData encData = null;
-		PGPPrivateKey privKey = null;
-		for (Iterator<PGPEncryptedData> iter = encDataList.getEncryptedDataObjects(); privKey == null
-				&& iter.hasNext();) {
-			encData = (PGPPublicKeyEncryptedData) iter.next();
-			privKey = secModel.checkPasswordAndGetPrivateKeyEncryption(encData.getKeyID(), passphrase);
+			if (privKey == null) {
+				fileInStream.close();
+				throw new PGPException("Private key not found.");
+			}
+
+			// Decrypt data
+			InputStream decryptedInputStream = encData.getDataStream(new JcePublicKeyDataDecryptorFactoryBuilder()
+					.setProvider(new BouncyCastleProvider()).build(privKey));
+			factory = new PGPObjectFactory(decryptedInputStream, new BcKeyFingerprintCalculator());
+			obj = factory.nextObject();
 		}
 
-		if (privKey == null) {
-			fileInStream.close();
-			throw new PGPException("Private key not found.");
-		}
-
-		// Decrypt data
-		InputStream decryptedInputStream = encData.getDataStream(
-				new JcePublicKeyDataDecryptorFactoryBuilder().setProvider(new BouncyCastleProvider()).build(privKey));
-		factory = new PGPObjectFactory(decryptedInputStream, new BcKeyFingerprintCalculator());
-		obj = factory.nextObject();
+//		PGPEncryptedDataList encDataList = (PGPEncryptedDataList) (obj instanceof PGPEncryptedDataList ? obj
+//				: factory.nextObject());
 
 		// Uncompress data
 		if (obj instanceof PGPCompressedData) {

@@ -164,10 +164,7 @@ public class MainFrame extends JFrame {
 					signEncryptDialog
 							.setLocationRelativeTo(SwingUtilities.getWindowAncestor((Component) e.getSource()));
 					signEncryptDialog.setVisible(true);
-				} else {
-					JOptionPane.showMessageDialog(me, "No file has been selected.", "File Error",
-							JOptionPane.WARNING_MESSAGE);
-				}
+				} 
 			}
 		});
 		btnSignEncrypt.setFont(new Font("Tahoma", Font.PLAIN, 16));
@@ -189,9 +186,6 @@ public class MainFrame extends JFrame {
 					decryptVerifyDialog
 							.setLocationRelativeTo(SwingUtilities.getWindowAncestor((Component) e.getSource()));
 					decryptVerifyDialog.setVisible(true);
-				} else {
-					JOptionPane.showMessageDialog(me, "No file has been selected.", "File Error",
-							JOptionPane.WARNING_MESSAGE);
 				}
 			}
 		});

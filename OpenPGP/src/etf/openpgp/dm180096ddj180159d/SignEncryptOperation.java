@@ -148,9 +148,7 @@ public class SignEncryptOperation {
 			sigGen.generate().encode(comOutStream);
 		}
 
-		if (bCompr) {
-			comGen.close();
-		}
+		comGen.close();
 
 		if (bEncr) {
 			encGen.close();
