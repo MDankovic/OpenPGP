@@ -185,23 +185,27 @@ public class SecretKeyRingTableModel extends DefaultTableModel {
 
 	}
 
-	public PGPPrivateKey checkPasswordAndGetPrivateKeyEncryption(long keyId, char[] passphrase) throws PGPException {
+	public PGPPrivateKey checkPasswordAndGetPrivateKeyEncryption(long keyId, char[] passphrase)
+			throws IllegalValueException {
 
 		for (PGPSecretKeyRing skr : secretKeyRingList) {
 			Iterator<PGPPublicKey> it = skr.getPublicKeys();
 			it.next();
 			if (keyId == it.next().getKeyID()) {
-				PBESecretKeyDecryptor decryptorFactory = new BcPBESecretKeyDecryptorBuilder(
-						new BcPGPDigestCalculatorProvider()).build(passphrase);
+				try {
+					PBESecretKeyDecryptor decryptorFactory = new BcPBESecretKeyDecryptorBuilder(
+							new BcPGPDigestCalculatorProvider()).build(passphrase);
 
-				Iterator<PGPSecretKey> it1 = skr.getSecretKeys();
-				it1.next();
-				PGPSecretKey elGamalKey = it1.next();
+					Iterator<PGPSecretKey> it1 = skr.getSecretKeys();
+					it1.next();
+					PGPSecretKey elGamalKey = it1.next();
 
-				return elGamalKey.extractPrivateKey(decryptorFactory);
+					return elGamalKey.extractPrivateKey(decryptorFactory);
+				} catch (PGPException e) {
+					throw new IllegalValueException("Incorrect password.");
+				}
 			}
 		}
 		return null;
-
 	}
 }

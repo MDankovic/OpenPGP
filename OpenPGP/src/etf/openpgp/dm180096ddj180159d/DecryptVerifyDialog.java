@@ -74,15 +74,16 @@ public class DecryptVerifyDialog extends JDialog {
 					String message = decVer.decryptVerifyMsg(file.getAbsolutePath(), passwordField.getPassword());
 					JOptionPane.showMessageDialog(me, message, "Sign/Encrypt File", JOptionPane.INFORMATION_MESSAGE);
 					dispose();
+				} catch (IllegalValueException e1) {
+					JOptionPane.showMessageDialog(me, e1.getMessage(), "Decrypt/Verify File",
+							JOptionPane.ERROR_MESSAGE);
 				} catch (PGPException e1) {
 					JOptionPane.showMessageDialog(me, "Error while decrypting file.", "Decrypt/Verify File",
 							JOptionPane.ERROR_MESSAGE);
-				} catch (IOException e2) {
+				} catch (IOException e1) {
 					JOptionPane.showMessageDialog(me, "Error while opening file.", "Decrypt/Verify File",
 							JOptionPane.ERROR_MESSAGE);
 				}
-
-				dispose();
 			}
 		});
 		btnOk.setFont(new Font("Tahoma", Font.PLAIN, 16));

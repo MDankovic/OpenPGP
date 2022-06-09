@@ -37,7 +37,8 @@ public class DecryptVerifyOperation {
 		this.pubModel = pubModel;
 	}
 
-	public String decryptVerifyMsg(String fileNameIn, char[] passphrase) throws PGPException, IOException {
+	public String decryptVerifyMsg(String fileNameIn, char[] passphrase)
+			throws IllegalValueException, PGPException, IOException {
 
 		String fileNameOut = fileNameIn.substring(0, fileNameIn.length() - 4);
 
@@ -108,7 +109,7 @@ public class DecryptVerifyOperation {
 
 		if (onePassSignList == null || signList == null) {
 			System.out.println("No signature.");
-			result = "No signature";
+			result = "No signature.";
 			return result;
 		}
 
@@ -122,10 +123,10 @@ public class DecryptVerifyOperation {
 
 		if (onePassSign.verify(signList.get(0))) {
 			System.out.println("Signed by: " + info);
-			result = "Signed by: " + info;
+			result = "Signed by: " + info + ".";
 		} else {
 			System.out.println("Signature not verified");
-			result = "Signature not verified";
+			result = "Signature not verified.";
 		}
 
 		return result;
